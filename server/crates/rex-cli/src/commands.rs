@@ -6,17 +6,14 @@ use rex_domain::{
 };
 use rex_ingest::{IngestConfig, IngestServices};
 
-use crate::cli::{Cli, Cmd, FilterArgs, IngestArgs, SearchArgs, TagValuesArgs};
+use crate::cli::{Cli, Cmd, FilterArgs, IngestArgs, SearchArgs, ServeArgs, TagValuesArgs};
 use crate::output;
 use crate::wire;
 
 pub async fn dispatch(cli: Cli) -> i32 {
     let result: Result<()> = match &cli.cmd {
         Cmd::Ingest(args) => ingest(&cli, args).await,
-        Cmd::Serve(_) => {
-            eprintln!("`rex serve` is not yet wired in v1 (rex-api crate pending).");
-            std::process::exit(64);
-        }
+        Cmd::Serve(args) => serve(&cli, args).await,
         Cmd::Search(args) => search(&cli, args).await,
         Cmd::Filter(args) => filter(&cli, args).await,
         Cmd::Get { id } => get(&cli, id).await,
@@ -150,6 +147,40 @@ async fn tag_values(cli: &Cli, args: &TagValuesArgs) -> Result<()> {
         .map_err(anyhow::Error::from)?;
     output::render_tag_values(&args.field, &counts, cli.json);
     Ok(())
+}
+
+async fn serve(cli: &Cli, args: &ServeArgs) -> Result<()> {
+    use std::sync::Arc;
+
+    let adapters = wire::open_adapters(&cli.db, cli.docs_root.as_deref())?;
+    let svc = Arc::new(wire::build_search_service(&adapters)?);
+
+    let state = Arc::new(
+        rex_api::AppState::builder()
+            .service(svc)
+            .blobs(adapters.blobs.clone())
+            .build()
+            .map_err(|e| anyhow::anyhow!("failed to build AppState: {e}"))?,
+    );
+
+    let addr: std::net::SocketAddr = args
+        .bind
+        .parse()
+        .with_context(|| format!("invalid --bind {:?}", args.bind))?;
+
+    eprintln!("  db        = {}", cli.db.display());
+    eprintln!(
+        "  docs-root = {}",
+        cli.docs_root
+            .as_ref()
+            .map(|p| p.display().to_string())
+            .unwrap_or_else(|| "(none)".into())
+    );
+    let _ = args.cors_allow.clone();
+    let _ = args.no_reranker;
+    let _ = args.warm;
+
+    rex_api::run(state, addr).await.map_err(anyhow::Error::from)
 }
 
 async fn pdf_anchor(cli: &Cli, id: &str) -> Result<()> {

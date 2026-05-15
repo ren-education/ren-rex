@@ -6,8 +6,8 @@ use std::time::Instant;
 
 use rex_domain::{
     BlobStore, Document, DocumentId, Embedder, Error, FacetCount, Filters, FtsIndex, ItemStore,
-    PdfAnchor, Reranker, Result, SearchHit, SearchMeta, SearchMode, SearchQuery, SearchResponse,
-    SubjectId, SubjectStats, TagField, TagValue, TimingBreakdown, VectorStore,
+    PdfAnchor, PdfSummary, Reranker, Result, SearchHit, SearchMeta, SearchMode, SearchQuery,
+    SearchResponse, SubjectId, SubjectStats, TagField, TagValue, TimingBreakdown, VectorStore,
 };
 
 use crate::config::SearchConfig;
@@ -179,6 +179,10 @@ impl SearchService {
         let doc = self.get(id).await?;
         doc.pdf_anchor
             .ok_or_else(|| Error::not_found(format!("pdf_anchor for {id}")))
+    }
+
+    pub async fn list_pdfs(&self, subject: &SubjectId) -> Result<Vec<PdfSummary>> {
+        self.items.list_pdfs(subject).await
     }
 }
 

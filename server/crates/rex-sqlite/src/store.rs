@@ -10,8 +10,8 @@ use std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use rex_domain::{
     BoundingBox, Document, DocumentId, DocumentKind, Embedding, Error, FacetCount,
-    FallbackReason, Filters, FtsIndex, ItemStore, PdfAnchor, Result, SourcePath, SubjectId,
-    SubjectStats, TagField, TagValue, Tags, VectorStore,
+    FallbackReason, Filters, FtsIndex, ItemStore, PdfAnchor, PdfSummary, Result, SourcePath,
+    SubjectId, SubjectStats, TagField, TagValue, Tags, VectorStore,
 };
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{params, params_from_iter, Connection, OptionalExtension};
@@ -373,6 +373,34 @@ impl ItemStore for SqliteStore {
                 Ok(FacetCount {
                     value: TagValue::new(v),
                     count: c as u64,
+                })
+            })
+            .map_err(map_err)?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    async fn list_pdfs(&self, subject: &SubjectId) -> Result<Vec<PdfSummary>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn
+            .prepare(
+                "SELECT pdf_path,
+                        COUNT(*) AS item_count,
+                        SUM(CASE WHEN pdf_page IS NOT NULL THEN 1 ELSE 0 END) AS page_anchored_count
+                 FROM documents
+                 WHERE subject_id = ? AND pdf_path IS NOT NULL
+                 GROUP BY pdf_path
+                 ORDER BY pdf_path",
+            )
+            .map_err(map_err)?;
+        let rows = stmt
+            .query_map([&subject.0], |r| {
+                let path: String = r.get(0)?;
+                let item_count: i64 = r.get(1)?;
+                let page_anchored: i64 = r.get(2)?;
+                Ok(PdfSummary {
+                    pdf_path: PathBuf::from(path),
+                    item_count: item_count as u64,
+                    page_anchored_count: page_anchored as u64,
                 })
             })
             .map_err(map_err)?;

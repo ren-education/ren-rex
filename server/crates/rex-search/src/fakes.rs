@@ -11,7 +11,8 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use rex_domain::{
     BlobStore, Document, DocumentId, Embedder, Embedding, FacetCount, Filters, FtsIndex,
-    ItemStore, Reranker, Result, SubjectId, SubjectStats, TagField, TagValue, VectorStore,
+    ItemStore, PdfSummary, Reranker, Result, SubjectId, SubjectStats, TagField, TagValue,
+    VectorStore,
 };
 
 // ─── ItemStore ─────────────────────────────────────────────────────────
@@ -148,6 +149,33 @@ impl ItemStore for FakeItemStore {
             .map(|(value, count)| FacetCount { value, count })
             .collect();
         out.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.value.0.cmp(&b.value.0)));
+        Ok(out)
+    }
+
+    async fn list_pdfs(&self, subject: &SubjectId) -> Result<Vec<PdfSummary>> {
+        let g = self.inner.lock().unwrap();
+        let mut by_path: HashMap<std::path::PathBuf, (u64, u64)> = HashMap::new();
+        for d in g.values() {
+            if &d.subject != subject {
+                continue;
+            }
+            if let Some(anchor) = &d.pdf_anchor {
+                let entry = by_path.entry(anchor.pdf_path.clone()).or_insert((0, 0));
+                entry.0 += 1;
+                if anchor.page_number.is_some() {
+                    entry.1 += 1;
+                }
+            }
+        }
+        let mut out: Vec<PdfSummary> = by_path
+            .into_iter()
+            .map(|(pdf_path, (item_count, page_anchored_count))| PdfSummary {
+                pdf_path,
+                item_count,
+                page_anchored_count,
+            })
+            .collect();
+        out.sort_by(|a, b| a.pdf_path.cmp(&b.pdf_path));
         Ok(out)
     }
 

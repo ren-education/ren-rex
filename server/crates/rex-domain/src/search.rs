@@ -183,3 +183,13 @@ pub struct FacetCounts {
     pub values: Vec<FacetCount>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PdfSummary {
+    /// Path relative to the BlobStore root.
+    pub pdf_path: std::path::PathBuf,
+    /// Number of documents anchored to this PDF.
+    pub item_count: u64,
+    /// Number anchored to a specific page (vs file-level fallback).
+    pub page_anchored_count: u64,
+}
+

@@ -11,7 +11,7 @@ use crate::document::{Document, TagField};
 use crate::embedding::Embedding;
 use crate::error::Result;
 use crate::ids::{DocumentId, SubjectId, TagValue};
-use crate::search::{FacetCount, Filters, SubjectStats};
+use crate::search::{FacetCount, Filters, PdfSummary, SubjectStats};
 
 #[async_trait]
 pub trait ItemStore: Send + Sync {
@@ -33,6 +33,9 @@ pub trait ItemStore: Send + Sync {
         field: TagField,
         filters: &Filters,
     ) -> Result<Vec<FacetCount>>;
+    /// List the distinct PDFs that any document in `subject` was anchored to,
+    /// with per-PDF item counts and page-anchored counts.
+    async fn list_pdfs(&self, subject: &SubjectId) -> Result<Vec<PdfSummary>>;
     async fn clear(&self, subject: &SubjectId) -> Result<()>;
 }
 

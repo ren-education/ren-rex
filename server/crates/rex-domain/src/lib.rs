@@ -19,6 +19,7 @@ pub use ids::{DocumentId, SourcePath, SubjectId, TagValue};
 pub use pdf::{BoundingBox, FallbackReason, PdfAnchor};
 pub use ports::{BlobStore, Embedder, FtsIndex, ItemStore, Reranker, VectorStore};
 pub use search::{
-    FacetCount, FacetCounts, Filters, Highlight, HighlightField, ScoreBreakdown, SearchHit,
-    SearchMeta, SearchMode, SearchQuery, SearchResponse, SubjectStats, TimingBreakdown,
+    FacetCount, FacetCounts, Filters, Highlight, HighlightField, PdfSummary, ScoreBreakdown,
+    SearchHit, SearchMeta, SearchMode, SearchQuery, SearchResponse, SubjectStats,
+    TimingBreakdown,
 };
