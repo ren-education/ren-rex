@@ -1,0 +1,18 @@
+[package]
+name = "rex-fs-local"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+rex-domain.workspace = true
+tokio = { version = "1", features = ["fs", "io-util", "rt"] }
+async-trait.workspace = true
+bytes.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }
+tempfile = "3"

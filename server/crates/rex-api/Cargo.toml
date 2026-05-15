@@ -1,0 +1,29 @@
+[package]
+name = "rex-api"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+rex-domain.workspace = true
+rex-search.workspace = true
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
+tracing.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+metrics.workspace = true
+metrics-exporter-prometheus.workspace = true
+sysinfo.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+bytes.workspace = true
+lru.workspace = true
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }
+tower = { version = "0.4", features = ["util"] }

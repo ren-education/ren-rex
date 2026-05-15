@@ -1,0 +1,24 @@
+[package]
+name = "rex-search"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[features]
+fakes = []
+
+[dependencies]
+rex-domain.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+rex-search = { path = ".", features = ["fakes"] }
+tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
+proptest = "1"
