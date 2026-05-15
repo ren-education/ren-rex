@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
-import { ChevronLeft, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   highlightInText,
@@ -25,14 +25,6 @@ interface Props {
   query: string;
 }
 
-type LocateSource = "server" | "client" | "fallback";
-
-interface LocateInfo {
-  page: number;
-  score: number;
-  source: LocateSource;
-}
-
 export function PdfViewer({ hit, query }: Props) {
   const docUrl = `/v1/documents/${hit.document.id}/pdf`;
   const hintedPage = hit.document.pdf_anchor?.page_number ?? null;
@@ -41,7 +33,6 @@ export function PdfViewer({ hit, query }: Props) {
   const [page, setPage] = useState<number>(hintedPage ?? 1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [locate, setLocate] = useState<LocateInfo | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(600);
 
@@ -58,7 +49,6 @@ export function PdfViewer({ hit, query }: Props) {
     setNumPages(0);
     setLoading(true);
     setError(null);
-    setLocate(null);
   }, [hit.document.id, hintedPage]);
 
   // Track the available width so the page scales to fit.
@@ -103,16 +93,7 @@ export function PdfViewer({ hit, query }: Props) {
         setPage(1);
       }
 
-      if (!target.trim()) {
-        if (hintedPage) {
-          setLocate({
-            page: hintedPage,
-            score: hit.document.pdf_anchor?.confidence ?? 1,
-            source: "server",
-          });
-        }
-        return;
-      }
+      if (!target.trim()) return;
 
       // Run client-side fuzzy match. pdfjs's text extraction is usually
       // cleaner than the server's pdf-extract, so this often finds the
@@ -123,19 +104,11 @@ export function PdfViewer({ hit, query }: Props) {
 
       if (located) {
         setPage(located.page);
-        setLocate({ ...located, source: "client" });
       } else if (hintedPage) {
         setPage(hintedPage);
-        setLocate({
-          page: hintedPage,
-          score: hit.document.pdf_anchor?.confidence ?? 0,
-          source: "server",
-        });
-      } else {
-        setLocate({ page: 1, score: 0, source: "fallback" });
       }
     },
-    [hintedPage, target, hit.document.pdf_anchor?.confidence],
+    [hintedPage, target],
   );
 
   const filename =
@@ -148,11 +121,6 @@ export function PdfViewer({ hit, query }: Props) {
         <span className="font-heading truncate text-foreground text-sm">
           {filename}
         </span>
-        {hit.document.pdf_anchor?.fallback_reason && locate?.source !== "client" && (
-          <span className="text-destructive/70 italic">
-            ({hit.document.pdf_anchor.fallback_reason})
-          </span>
-        )}
         <span className="ml-auto flex items-center gap-1">
           <Button
             type="button"
@@ -175,6 +143,17 @@ export function PdfViewer({ hit, query }: Props) {
           >
             <ChevronRight />
           </Button>
+          {/* Download: anchor with `download` attribute hints the browser to save
+              rather than navigate. The filename comes from pdf_anchor.pdf_path so
+              the saved file matches what the user sees in the toolbar. */}
+          <a
+            href={docUrl}
+            download={filename}
+            className="ml-2 inline-flex items-center gap-1 border-b border-accent text-primary hover:border-primary"
+            title="Download PDF"
+          >
+            download <Download className="size-3" />
+          </a>
           <a
             href={docUrl}
             target="_blank"
@@ -225,31 +204,6 @@ export function PdfViewer({ hit, query }: Props) {
         </Document>
       </div>
 
-      {/* Locate provenance footer — tells the user where the page came from */}
-      {locate && (
-        <p className="smallcaps">
-          {locate.source === "client" && (
-            <>
-              Auto-located to page <span className="num text-foreground">{locate.page}</span>{" "}
-              {numPages ? <>of <span className="num">{numPages}</span>{" "}</> : null}
-              · client match <span className="num">{locate.score.toFixed(2)}</span>
-            </>
-          )}
-          {locate.source === "server" && (
-            <>
-              Server-anchored to page <span className="num text-foreground">{locate.page}</span>
-              {numPages ? <> of <span className="num">{numPages}</span></> : null}
-            </>
-          )}
-          {locate.source === "fallback" && (
-            <>
-              Showing page <span className="num text-foreground">1</span>
-              {numPages ? <> of <span className="num">{numPages}</span></> : null}
-              {" "}· no page anchor found
-            </>
-          )}
-        </p>
-      )}
     </div>
   );
 }

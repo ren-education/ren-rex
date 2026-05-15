@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { Search, FileText, Sparkles, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +19,7 @@ import { PdfViewerLoader } from "@/components/pdf-viewer-loader";
 import { FacetBar } from "@/components/facet-bar";
 import { useFacets, type FacetField } from "@/lib/use-facets";
 import { filter as filterApi, search as searchApi } from "@/lib/rex";
+import { formatSubject } from "@/lib/subjects";
 import type {
   DocumentKind,
   Filters,
@@ -96,12 +98,21 @@ const DEMO_META: SearchMeta = {
  *  are local; we synthesize the API payload in `buildFilters`. */
 type FacetSelections = Partial<Record<FacetField, string[]>>;
 
+/** Page size for the FILTER path (browse). Search is unpaginated and uses
+ *  its own limit (see runQuery below). */
+const FILTER_PAGE_SIZE = 20;
+
 export function SearchPanel({ subjects, apiOnline }: Props) {
   const [query, setQuery] = useState("");
   const [subject, setSubject] = useState<string>(subjects[0]?.id ?? "");
   const [mode, setMode] = useState<SearchMode>("Hybrid");
   const [selections, setSelections] = useState<FacetSelections>({});
   const [kind, setKind] = useState<DocumentKind | null>(null);
+  // 0-indexed page within the FILTER path only. Reset to 0 on any change
+  // that could shrink the total set (subject switch, facet toggle, kind
+  // change, search submit). Pagination clicks are the only thing that
+  // advance it.
+  const [page, setPage] = useState(0);
   const [hits, setHits] = useState<SearchHit[]>(apiOnline ? [] : DEMO_HITS);
   const [meta, setMeta] = useState<SearchMeta | null>(apiOnline ? null : DEMO_META);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -121,12 +132,13 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
   // the current field's selections per-facet so each one stays explorable.
   const { facets } = useFacets(normalizedSubject, apiFilters);
 
-  // Reset facet selections AND kind when the subject changes — values from
-  // h2physics don't carry over to hcchem etc., and a Notes-only filter
-  // could surprise the user after switching subjects.
+  // Reset facet selections AND kind AND page when the subject changes —
+  // values from h2physics don't carry over to hcchem etc., and a Notes-only
+  // filter could surprise the user after switching subjects.
   useEffect(() => {
     setSelections({});
     setKind(null);
+    setPage(0);
   }, [normalizedSubject]);
 
   function toggleFacet(field: FacetField, value: string) {
@@ -137,6 +149,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
         : [...cur, value];
       return { ...prev, [field]: next };
     });
+    setPage(0);
   }
 
   function clearFacet(field: FacetField) {
@@ -145,21 +158,34 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
       delete next[field];
       return next;
     });
+    setPage(0);
   }
 
   function clearAllFacets() {
     setSelections({});
     setKind(null);
+    setPage(0);
+  }
+
+  function setKindAndResetPage(k: DocumentKind | null) {
+    setKind(k);
+    setPage(0);
   }
 
   // Stable async runner used by both the explicit "Search" submit and the
-  // implicit filter-only fetch triggered by facet changes.
+  // implicit filter-only fetch triggered by facet/page changes.
   const runQuery = useCallback(
-    (text: string, currentMode: SearchMode, filters: Filters) => {
+    (
+      text: string,
+      currentMode: SearchMode,
+      filters: Filters,
+      currentPage: number,
+    ) => {
       setError(null);
       startTransition(async () => {
         try {
           if (text.trim()) {
+            // Search path — page is ignored. Single ranked list, top-N.
             const res = await searchApi({
               text,
               mode: currentMode,
@@ -170,10 +196,12 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
             setMeta(res.meta);
             setSelectedId(res.hits[0]?.document.id ?? null);
           } else if (filters.subject || hasAnySelection(filters)) {
-            // No text query — but a subject or any facet is set. Browse
-            // the subject's contents via /v1/filter so the results pane
-            // is never blank when a subject is active.
-            const res = await filterApi({ filters, limit: 20 });
+            // Filter path — paginated. limit + offset come from currentPage.
+            const res = await filterApi({
+              filters,
+              limit: FILTER_PAGE_SIZE,
+              offset: currentPage * FILTER_PAGE_SIZE,
+            });
             setHits(res.hits);
             setMeta(res.meta);
             setSelectedId(res.hits[0]?.document.id ?? null);
@@ -191,21 +219,28 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
     [],
   );
 
-  // Re-fetch whenever filters change (including the initial mount with a
-  // pre-selected subject). Query/mode changes still wait for explicit
+  // Re-fetch whenever filters or page change (including the initial mount
+  // with a pre-selected subject). Query/mode changes still wait for explicit
   // Search submit. apiOnline gates the auto-fetch so demo data stays put
   // when the server isn't reachable.
   useEffect(() => {
     if (!apiOnline) return;
-    runQuery(query, mode, apiFilters);
+    runQuery(query, mode, apiFilters, page);
     // We intentionally omit `query` and `mode` from deps — filter changes
     // auto-re-run, but query/mode changes wait for explicit Search submit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiFilters, runQuery, apiOnline]);
+  }, [apiFilters, page, runQuery, apiOnline]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    runQuery(query, mode, apiFilters);
+    // Reset to page 0 for any new search/filter. If page was already 0, the
+    // useEffect won't re-fire on its own (deps unchanged), so call runQuery
+    // explicitly. If page was non-zero, setPage(0) triggers the useEffect.
+    if (page !== 0) {
+      setPage(0);
+    } else {
+      runQuery(query, mode, apiFilters, 0);
+    }
   }
 
   return (
@@ -232,7 +267,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
               <SelectItem value="__all__">All subjects</SelectItem>
               {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                  {s.id}{" "}
+                  {formatSubject(s.id)}{" "}
                   <span className="num text-muted-foreground ml-1">
                     ({s.item_count.toLocaleString()})
                   </span>
@@ -286,7 +321,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
           onToggle={toggleFacet}
           onClear={clearFacet}
           onClearAll={clearAllFacets}
-          onKindChange={setKind}
+          onKindChange={setKindAndResetPage}
         />
       )}
 
@@ -311,33 +346,107 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
 
       {/* ─── Split: results | viewer ────────────────────────────── */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-        <ul className="flex flex-col">
-          {hits.map((hit) => (
-            <li
-              key={hit.document.id}
-              className={cn(
-                "paper cursor-pointer transition-colors",
-                hit.document.id === selectedId
-                  ? "bg-accent/30 -mx-3 px-3"
-                  : "hover:bg-accent/15 -mx-3 px-3",
-              )}
-              onClick={() => setSelectedId(hit.document.id)}
-            >
-              <HitCard hit={hit} isSelected={hit.document.id === selectedId} />
-            </li>
-          ))}
-          {!hits.length && !error && (
-            <li className="py-10 text-center text-sm text-muted-foreground italic">
-              Type a query above to search the archive.
-            </li>
-          )}
-        </ul>
+        <div className="flex flex-col">
+          <ul className="flex flex-col">
+            {hits.map((hit) => (
+              <li
+                key={hit.document.id}
+                className={cn(
+                  "paper cursor-pointer transition-colors",
+                  hit.document.id === selectedId
+                    ? "bg-accent/30 -mx-3 px-3"
+                    : "hover:bg-accent/15 -mx-3 px-3",
+                )}
+                onClick={() => setSelectedId(hit.document.id)}
+              >
+                <HitCard hit={hit} isSelected={hit.document.id === selectedId} />
+              </li>
+            ))}
+            {!hits.length && !error && (
+              <li className="py-10 text-center text-sm text-muted-foreground italic">
+                Type a query above to search the archive.
+              </li>
+            )}
+          </ul>
+
+          {/* Pagination bar — only on the filter path, when there's more
+              than one page worth of results. Search results aren't paginated. */}
+          {meta?.mode === "Filter"
+            && meta.total_matches != null
+            && meta.total_matches > FILTER_PAGE_SIZE && (
+              <FilterPagination
+                page={page}
+                pageSize={FILTER_PAGE_SIZE}
+                total={meta.total_matches}
+                hitsOnPage={hits.length}
+                onPrev={() => setPage((p) => Math.max(0, p - 1))}
+                onNext={() => setPage((p) => p + 1)}
+                disabled={isPending}
+              />
+            )}
+        </div>
 
         <div className="lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
           <PdfViewerLoader hit={selectedHit} query={query} />
         </div>
       </div>
     </section>
+  );
+}
+
+interface FilterPaginationProps {
+  page: number;
+  pageSize: number;
+  total: number;
+  hitsOnPage: number;
+  onPrev: () => void;
+  onNext: () => void;
+  disabled?: boolean;
+}
+
+function FilterPagination({
+  page,
+  pageSize,
+  total,
+  hitsOnPage,
+  onPrev,
+  onNext,
+  disabled,
+}: FilterPaginationProps) {
+  const start = page * pageSize + 1;
+  const end = page * pageSize + hitsOnPage;
+  const isFirstPage = page === 0;
+  const isLastPage = end >= total;
+
+  return (
+    <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+      <div className="smallcaps">
+        Showing <span className="num text-foreground">{start.toLocaleString()}</span>
+        –<span className="num text-foreground">{end.toLocaleString()}</span>
+        {" of "}
+        <span className="num text-foreground">{total.toLocaleString()}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onPrev}
+          disabled={disabled || isFirstPage}
+        >
+          ← Prev
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onNext}
+          disabled={disabled || isLastPage}
+        >
+          Next →
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -380,6 +489,20 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
         )
       )}
 
+      {/* Topics — content classification (e.g. "Cold War", "Kinematics").
+          Distinct from metadata facets above (school, paper-type); these
+          describe what the question is *about*. Chips read better than a
+          comma-separated list and naturally wrap when there are many. */}
+      {d.tags.topics.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {d.tags.topics.map((topic) => (
+            <Badge key={topic} variant="outline" className="font-normal">
+              {topic}
+            </Badge>
+          ))}
+        </div>
+      )}
+
       {d.context && <p className="leadin text-sm">{d.context}</p>}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -392,11 +515,6 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
             <span className={cn("text-primary", isSelected && "underline underline-offset-4")}>
               {d.pdf_anchor.pdf_path.split("/").pop()}
             </span>
-            {d.pdf_anchor.fallback_reason && (
-              <span className="text-destructive/70 italic">
-                ({d.pdf_anchor.fallback_reason})
-              </span>
-            )}
           </span>
         )}
         <span className="num text-muted-foreground/70 ml-auto">
