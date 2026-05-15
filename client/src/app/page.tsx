@@ -42,7 +42,7 @@ export default async function Home() {
               href="https://ren.education"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-sans font-black tracking-tight text-foreground transition-opacity hover:opacity-70"
+              className="font-sans font-bold tracking-tight text-foreground transition-opacity hover:opacity-70"
             >
               ren.
             </a>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { Search, FileText, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,13 +164,16 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
             setHits(res.hits);
             setMeta(res.meta);
             setSelectedId(res.hits[0]?.document.id ?? null);
-          } else if (hasAnySelection(filters)) {
+          } else if (filters.subject || hasAnySelection(filters)) {
+            // No text query — but a subject or any facet is set. Browse
+            // the subject's contents via /v1/filter so the results pane
+            // is never blank when a subject is active.
             const res = await filterApi({ filters, limit: 20 });
             setHits(res.hits);
             setMeta(res.meta);
             setSelectedId(res.hits[0]?.document.id ?? null);
           } else {
-            // No query and no filters → clear results to the empty state.
+            // No subject, no filters, no query → genuinely empty state.
             setHits([]);
             setMeta(null);
             setSelectedId(null);
@@ -183,21 +186,17 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
     [],
   );
 
-  // Re-fetch when filters change (provided there's a query OR explicit filters).
-  // Skip on the very first render so we don't fire a request before the user
-  // has interacted. Also skip the first render after a subject switch — the
-  // selections effect above will have just cleared them.
-  const firstRenderRef = useRef(true);
+  // Re-fetch whenever filters change (including the initial mount with a
+  // pre-selected subject). Query/mode changes still wait for explicit
+  // Search submit. apiOnline gates the auto-fetch so demo data stays put
+  // when the server isn't reachable.
   useEffect(() => {
-    if (firstRenderRef.current) {
-      firstRenderRef.current = false;
-      return;
-    }
+    if (!apiOnline) return;
     runQuery(query, mode, apiFilters);
     // We intentionally omit `query` and `mode` from deps — filter changes
     // auto-re-run, but query/mode changes wait for explicit Search submit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiFilters, runQuery]);
+  }, [apiFilters, runQuery, apiOnline]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
