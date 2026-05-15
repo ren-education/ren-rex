@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Search, FileText, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,16 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Tip } from "@/components/tip";
 import { PdfViewerLoader } from "@/components/pdf-viewer-loader";
-import type { SearchHit, SearchMeta, SearchMode, SubjectStats } from "@/lib/types";
+import { FacetBar } from "@/components/facet-bar";
+import { useFacets, type FacetField } from "@/lib/use-facets";
+import { filter as filterApi, search as searchApi } from "@/lib/rex";
+import type {
+  Filters,
+  SearchHit,
+  SearchMeta,
+  SearchMode,
+  SubjectStats,
+} from "@/lib/types";
 
 interface Props {
   subjects: SubjectStats[];
@@ -81,10 +90,16 @@ const DEMO_META: SearchMeta = {
   fts5_query: "cold war", total_matches: null, took_ms: 15,
 };
 
+/** Selected-value sets per facet field. We keep these separate from the
+ *  on-wire `Filters` shape so the UI's invariants (no nulls, sorted, deduped)
+ *  are local; we synthesize the API payload in `buildFilters`. */
+type FacetSelections = Partial<Record<FacetField, string[]>>;
+
 export function SearchPanel({ subjects, apiOnline }: Props) {
   const [query, setQuery] = useState("");
   const [subject, setSubject] = useState<string>(subjects[0]?.id ?? "");
   const [mode, setMode] = useState<SearchMode>("Hybrid");
+  const [selections, setSelections] = useState<FacetSelections>({});
   const [hits, setHits] = useState<SearchHit[]>(apiOnline ? [] : DEMO_HITS);
   const [meta, setMeta] = useState<SearchMeta | null>(apiOnline ? null : DEMO_META);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -92,36 +107,101 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const selectedHit = hits.find((h) => h.document.id === selectedId) ?? null;
+  const normalizedSubject = subject && subject !== "__all__" ? subject : "";
+
+  // Build the API Filters payload from the current selections + subject.
+  const apiFilters: Filters = useMemo(
+    () => buildFilters(normalizedSubject, selections),
+    [normalizedSubject, selections],
+  );
+
+  // Fetch facet counts whenever subject or filters change. The hook strips
+  // the current field's selections per-facet so each one stays explorable.
+  const { facets } = useFacets(normalizedSubject, apiFilters);
+
+  // Reset facet selections when the subject changes — values from h2physics
+  // don't carry over to hcchem etc.
+  useEffect(() => {
+    setSelections({});
+  }, [normalizedSubject]);
+
+  function toggleFacet(field: FacetField, value: string) {
+    setSelections((prev) => {
+      const cur = prev[field] ?? [];
+      const next = cur.includes(value)
+        ? cur.filter((v) => v !== value)
+        : [...cur, value];
+      return { ...prev, [field]: next };
+    });
+  }
+
+  function clearFacet(field: FacetField) {
+    setSelections((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function clearAllFacets() {
+    setSelections({});
+  }
+
+  // Stable async runner used by both the explicit "Search" submit and the
+  // implicit filter-only fetch triggered by facet changes.
+  const runQuery = useCallback(
+    (text: string, currentMode: SearchMode, filters: Filters) => {
+      setError(null);
+      startTransition(async () => {
+        try {
+          if (text.trim()) {
+            const res = await searchApi({
+              text,
+              mode: currentMode,
+              filters,
+              limit: 20,
+            });
+            setHits(res.hits);
+            setMeta(res.meta);
+            setSelectedId(res.hits[0]?.document.id ?? null);
+          } else if (hasAnySelection(filters)) {
+            const res = await filterApi({ filters, limit: 20 });
+            setHits(res.hits);
+            setMeta(res.meta);
+            setSelectedId(res.hits[0]?.document.id ?? null);
+          } else {
+            // No query and no filters → clear results to the empty state.
+            setHits([]);
+            setMeta(null);
+            setSelectedId(null);
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : String(err));
+        }
+      });
+    },
+    [],
+  );
+
+  // Re-fetch when filters change (provided there's a query OR explicit filters).
+  // Skip on the very first render so we don't fire a request before the user
+  // has interacted. Also skip the first render after a subject switch — the
+  // selections effect above will have just cleared them.
+  const firstRenderRef = useRef(true);
+  useEffect(() => {
+    if (firstRenderRef.current) {
+      firstRenderRef.current = false;
+      return;
+    }
+    runQuery(query, mode, apiFilters);
+    // We intentionally omit `query` and `mode` from deps — filter changes
+    // auto-re-run, but query/mode changes wait for explicit Search submit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiFilters, runQuery]);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
-    setError(null);
-
-    startTransition(async () => {
-      try {
-        const res = await fetch("/v1/search", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            text: query,
-            mode,
-            filters: subject ? { subject } : {},
-            limit: 20,
-          }),
-        });
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          throw new Error(body?.error?.message ?? res.statusText);
-        }
-        const data = await res.json();
-        setHits(data.hits);
-        setMeta(data.meta);
-        setSelectedId(data.hits[0]?.document.id ?? null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-      }
-    });
+    runQuery(query, mode, apiFilters);
   }
 
   return (
@@ -192,6 +272,17 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
         <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {error}
         </div>
+      )}
+
+      {/* ─── Facet filters (when a subject is selected) ─────────── */}
+      {normalizedSubject && (
+        <FacetBar
+          filters={apiFilters}
+          facets={facets}
+          onToggle={toggleFacet}
+          onClear={clearFacet}
+          onClearAll={clearAllFacets}
+        />
       )}
 
       {/* ─── Meta strip ─────────────────────────────────────────── */}
@@ -310,5 +401,33 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
         </span>
       </div>
     </article>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Helpers
+// ────────────────────────────────────────────────────────────────────────
+
+function buildFilters(subject: string, selections: FacetSelections): Filters {
+  const f: Filters = {};
+  if (subject) f.subject = subject;
+  if (selections.topics?.length)         f.topics         = selections.topics;
+  if (selections.schools?.length)        f.schools        = selections.schools;
+  if (selections.paper_types?.length)    f.paper_types    = selections.paper_types;
+  if (selections.source_types?.length)   f.source_types   = selections.source_types;
+  if (selections.exam_systems?.length)   f.exam_systems   = selections.exam_systems;
+  if (selections.question_types?.length) f.question_types = selections.question_types;
+  return f;
+}
+
+/** Are any facet fields (not counting subject) populated? */
+function hasAnySelection(filters: Filters): boolean {
+  return Boolean(
+    filters.topics?.length
+      || filters.schools?.length
+      || filters.paper_types?.length
+      || filters.source_types?.length
+      || filters.exam_systems?.length
+      || filters.question_types?.length,
   );
 }
