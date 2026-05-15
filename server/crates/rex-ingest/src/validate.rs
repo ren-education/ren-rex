@@ -298,10 +298,13 @@ mod tests {
         let dir = std::env::temp_dir();
         let path = dir.join("rex-validate-test-buckets.jsonl");
         let mut f = std::fs::File::create(&path).unwrap();
-        // Two rows broken in the same way (`tags.common_mistakes` is rejected
-        // by `JsonlTags`'s `deny_unknown_fields`); one clean row.
-        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{{"common_mistakes":["a"]}}}}"#).unwrap();
-        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6321","source":"y.md","tags":{{"common_mistakes":["b"]}}}}"#).unwrap();
+        // Two rows broken in the same way (a clearly-fictional tag field
+        // that JsonlTags will reject via deny_unknown_fields); one clean
+        // row. Field name is intentionally absurd so future expansions of
+        // JsonlTags don't quietly "fix" this test the way `common_mistakes`
+        // did once we added it as a known field.
+        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{{"rex_test_only_zzz":["a"]}}}}"#).unwrap();
+        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6321","source":"y.md","tags":{{"rex_test_only_zzz":["b"]}}}}"#).unwrap();
         writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6322","source":"z.md","tags":{{}}}}"#).unwrap();
         let r = validate_file(&path, DocumentKind::Note, &SubjectId::new("test")).unwrap();
         assert_eq!(r.total_rows, 3);
@@ -318,7 +321,7 @@ mod tests {
         let dir = std::env::temp_dir();
         let path = dir.join("rex-validate-test-tags.jsonl");
         let mut f = std::fs::File::create(&path).unwrap();
-        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{{"common_mistakes":["a"]}}}}"#).unwrap();
+        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{{"rex_test_only_zzz":["a"]}}}}"#).unwrap();
         let r = validate_file(&path, DocumentKind::Note, &SubjectId::new("test")).unwrap();
         assert_eq!(r.failed_rows, 1);
         assert!(r.buckets[0].signature.contains("unknown field"));

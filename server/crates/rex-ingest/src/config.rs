@@ -32,7 +32,10 @@ impl IngestConfig {
             docs_root: docs_root.into(),
             rebuild: true,
             batch_size: 256,
-            max_skip_pct: 5.0,
+            // 20% was chosen empirically: h2physics's notes file has 16.2%
+            // of rows with malformed UUIDs upstream. Use `rex validate` to
+            // surface the actual error distribution before tightening this.
+            max_skip_pct: 20.0,
             anchor_confidence_threshold: 0.6,
         }
     }

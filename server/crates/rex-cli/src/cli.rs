@@ -105,7 +105,9 @@ pub struct IngestArgs {
     #[arg(long, default_value_t = true)]
     pub rebuild: bool,
     /// Abort ingest if percentage of rows skipped exceeds this threshold.
-    #[arg(long, default_value_t = 5.0)]
+    /// Default 20.0 — calibrated to h2physics's ~16% malformed-UUID rate.
+    /// Run `rex validate` first to see the actual error mix.
+    #[arg(long, default_value_t = 20.0)]
     pub max_skip_pct: f64,
     /// Embedding batch size.
     #[arg(long, default_value_t = 256)]

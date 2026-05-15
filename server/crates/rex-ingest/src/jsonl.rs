@@ -1,8 +1,11 @@
 //! Parsing of `questions.jsonl` and `notes.jsonl` rows.
 //!
 //! `JsonlRow` mirrors the observed shape of rob-the-crawler's output across
-//! both h2physics and h2history. `#[serde(deny_unknown_fields)]` is on so any
-//! new field rob adds surfaces as a loud parse failure rather than silent loss.
+//! h2physics, h2history, and gp. Unknown fields are silently ignored — rob
+//! moves faster than rex's schema, and we'd rather index the rows we can
+//! understand than drop them because of a new field we haven't wired up yet.
+//! Use `rex validate` to surface drift between rob's output and this schema
+//! before it bites silently downstream.
 
 use std::path::PathBuf;
 
@@ -13,7 +16,6 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
 pub struct JsonlRow {
     pub id: String,
     #[serde(default)]
@@ -67,20 +69,39 @@ pub struct JsonlRow {
 }
 
 #[derive(Debug, Deserialize, Default)]
-#[serde(deny_unknown_fields)]
 pub struct JsonlTags {
-    #[serde(default)]
+    #[serde(default, deserialize_with = "nullable_vec_string")]
     pub topics: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "nullable_vec_string")]
     pub question_types: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "nullable_vec_string")]
     pub exam_systems: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "nullable_vec_string")]
     pub paper_types: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "nullable_vec_string")]
     pub schools: Vec<String>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "nullable_vec_string")]
     pub source_types: Vec<String>,
+    /// Newly-observed in h2history + h2physics notes. Accepted, currently
+    /// not surfaced via the FacetBar — promote to a first-class field if/when
+    /// the front-end wants to filter on it.
+    #[serde(default, deserialize_with = "nullable_vec_string")]
+    pub common_mistakes: Vec<String>,
+    /// Observed in 1 gp row. Probably a typo for paper_types upstream; we
+    /// accept-and-ignore for now rather than crash the ingest on a singleton.
+    #[serde(default, deserialize_with = "nullable_vec_string")]
+    pub paper_systems: Vec<String>,
+}
+
+/// Accept either `null`, missing field, or `Vec<String>` and normalize to
+/// `Vec<String>`. Some upstream rows emit `"question_types": null` instead
+/// of `[]`; that round-trips through serde_json as `None` rather than the
+/// default value, so we need this helper to coalesce them.
+fn nullable_vec_string<'de, D>(de: D) -> Result<Vec<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Option::<Vec<String>>::deserialize(de).map(|v| v.unwrap_or_default())
 }
 
 impl JsonlRow {
@@ -93,11 +114,18 @@ impl JsonlRow {
         subject: SubjectId,
         kind: DocumentKind,
     ) -> Result<Document, String> {
-        let id = DocumentId::parse(&self.id).map_err(|e| format!("invalid id {}: {e}", self.id))?;
+        // Uuid::parse_str is case-sensitive; some upstream rows ship
+        // uppercase ids. Normalize before parsing so we don't reject
+        // those rows just on case.
+        let id = DocumentId::parse(&self.id.to_lowercase())
+            .map_err(|e| format!("invalid id {}: {e}", self.id))?;
         let parent_id = self
             .parent_id
             .as_ref()
-            .map(|s| DocumentId::parse(s).map_err(|e| format!("invalid parent_id {s}: {e}")))
+            .map(|s| {
+                DocumentId::parse(&s.to_lowercase())
+                    .map_err(|e| format!("invalid parent_id {s}: {e}"))
+            })
             .transpose()?;
         let depends_on: Vec<DocumentId> = self
             .depends_on
