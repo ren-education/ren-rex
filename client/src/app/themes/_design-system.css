@@ -62,7 +62,12 @@ html, body {
      Padding/margin stay zero because pdfjs sizes each span to fit
      specific glyph runs; any added box dimension shifts the alignment. */
   mark.rex-mark {
-    background-color: color-mix(in oklab, var(--accent) 60%, transparent);
+    /* Use --primary (saturated sage) rather than --accent (pale sage-soft
+       used for hover backgrounds). At ~33% alpha the tint reads clearly
+       as a highlighter while the canvas glyphs stay legible. Tune the
+       percentage if you find it too loud or faint after a session of
+       use; sweet spot is roughly 25-40%. */
+    background-color: color-mix(in oklab, var(--primary) 33%, transparent);
     color: inherit;
     padding: 0;
     margin: 0;
