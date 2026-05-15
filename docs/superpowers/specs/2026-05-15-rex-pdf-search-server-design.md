@@ -78,31 +78,40 @@ The server is named **`rex`** and lives in the `ren-rex` git repository at `/Use
 crates/
 ├── rex-domain        ← zero external deps. Pure data + trait definitions (ports).
 ├── rex-search        ← deps: rex-domain. The query pipeline (BM25 + vec + rerank).
-├── rex-ingest        ← deps: rex-domain. JSONL parser + indexing orchestrator.
 ├── rex-pdf           ← deps: rex-domain. PDF text extraction + page anchoring.
+├── rex-ingest        ← deps: rex-domain, rex-pdf. JSONL parser + indexing orchestrator.
 ├── rex-sqlite        ← deps: rex-domain. Impls ItemStore, VectorStore, FtsIndex.
 ├── rex-llamacpp      ← deps: rex-domain. Impls Embedder + Reranker (GGUF).
 ├── rex-fs-local      ← deps: rex-domain. Impls BlobStore (PDF bytes).
 ├── rex-api           ← deps: rex-domain, rex-search. axum HTTP layer.
-└── rex-cli           ← deps: ALL above. Binary `rex`; wires concrete adapters.
+└── rex-cli           ← deps: every crate above. Binary `rex`; wires concrete adapters.
 ```
 
 Dependency graph (arrows = "depends on"):
 
 ```
-            ┌──────────────────────────────────────────┐
-            │              rex-cli (binary)            │
-            └──────────────────────────────────────────┘
-              │      │      │      │      │      │
-              ▼      ▼      ▼      ▼      ▼      ▼
-         rex-api  rex-ingest  rex-sqlite  rex-llamacpp  rex-fs-local  rex-pdf
-              │      │      │      │           │           │
-              └─rex-search   │      │           │           │
-                  │          │      │           │           │
-                  └──────────┴──────┴───────────┴───────────┘
-                                     │
-                                     ▼
-                                rex-domain  (no deps)
+                  ┌──────────────────────────────────────────────────┐
+                  │                  rex-cli (binary)                │
+                  └──────────────────────────────────────────────────┘
+                    │       │       │       │       │       │     │
+                    ▼       ▼       ▼       ▼       ▼       ▼     ▼
+                 rex-api  rex-ingest  rex-sqlite  rex-llamacpp  rex-fs-local  rex-pdf  rex-search
+                    │       │              │           │            │          │         │
+                    └───────┼──────────────┼───────────┼────────────┼──────────┘         │
+                            │              │           │            │                    │
+                            ▼              ▼           ▼            ▼                    ▼
+                                              rex-domain  (no deps)
+
+Edges by source:
+- rex-cli       → rex-api, rex-ingest, rex-search, rex-sqlite, rex-llamacpp, rex-fs-local, rex-pdf, rex-domain
+- rex-api       → rex-search, rex-domain
+- rex-search    → rex-domain
+- rex-ingest    → rex-pdf, rex-domain
+- rex-pdf       → rex-domain
+- rex-sqlite    → rex-domain
+- rex-llamacpp  → rex-domain
+- rex-fs-local  → rex-domain
+- rex-domain    → (none)
 ```
 
 **Invariants enforced by the workspace:**
@@ -183,6 +192,13 @@ pub struct PdfAnchor {
     pub page_number: Option<u32>,                   // None = file-level fallback
     pub bbox: Option<BoundingBox>,                  // optional, usually None in v1
     pub confidence: f32,                            // fuzzy-match score, 0.0-1.0
+    pub fallback_reason: Option<FallbackReason>,    // None = exact page anchor
+}
+
+pub enum FallbackReason {
+    LowConfidence,    // fuzzy match below 0.6 threshold
+    PdfReadFailed,    // BlobStore::get or extract_pages errored
+    PdfNotFound,      // derived PDF path does not exist
 }
 
 pub struct BoundingBox { pub x: f32, pub y: f32, pub w: f32, pub h: f32 }
@@ -456,7 +472,12 @@ The pipeline branches at entry based on `query.mode` and whether `query.text` is
 | `VectorOnly` | ✅ | ❌ | ✅ | ❌ | Pure semantic; keywords don't help |
 | `Filter` | ❌ | ❌ | ❌ | ❌ | Triggered automatically when `text=None` |
 
-A request with `text=None` short-circuits to the filter-only path (`ItemStore::query`) regardless of `mode`. A request with `text=Some` and `mode=Filter` is treated as `BadInput`. A request with `text=None` and `mode != Filter` is also rejected (clients must pick deliberately).
+Validation rules (enforced identically in both API and CLI layers):
+
+- `mode == Filter` with `text = Some(_)` → `BadInput`.
+- `mode != Filter` with `text = None` → `BadInput` (clients must opt in to `Filter` deliberately rather than have it inferred from a missing field).
+
+The `Filter` mode is always reached via either the `POST /v1/filter` endpoint or the `rex filter` CLI subcommand. The `Hybrid`, `Bm25Only`, and `VectorOnly` modes are reached via `POST /v1/search` / `rex search` and require a non-empty `text`.
 
 ### 6.4 Fusion: Reciprocal Rank Fusion (RRF)
 
@@ -476,6 +497,8 @@ Cross-encoder reranking runs only when:
 The reranker is given the top-20 (`rerank_top_n`) candidates after fusion, paired with the candidate's `search_text` (constructed identically to ingest, see §7.3). The reranker returns scores in `[0, 1]` per pair; the final ordering is by reranker score descending.
 
 A no-op fake reranker (returns input order unchanged) is used in tests and when `--no-reranker` is set at serve time. This means `SearchService` always has *some* reranker, but the no-op reranker yields the post-fusion ordering.
+
+**Hydration is skipped when the reranker is no-op or absent.** Hydration (`ItemStore::get_many` on the fused candidate list) exists to feed the reranker the candidates' `search_text`. When the reranker is no-op or `self.reranker.is_none()`, no candidate text is needed for ranking; hydration is deferred until the final response-shaping stage, where only the top-`limit` documents (not the full top-N) are fetched. This avoids a wasted batch read in `--no-reranker` mode.
 
 ### 6.6 Highlights
 
@@ -519,12 +542,12 @@ Phase 1: Parse JSONL (streaming)
 
 Phase 2: Resolve PDF anchors + Embed (batched, 256 at a time)
   - For each record: derive PDF path from doc.source (markdown → PDF mapping rule)
-  - Read PDF bytes via BlobStore
-  - Extract per-page text via rex-pdf::extract_pages (pdfium-render)
+  - If derived PDF path does not exist in BlobStore → pdf_anchor with fallback_reason=PdfNotFound
+  - Else read PDF bytes via BlobStore + extract per-page text via rex-pdf::extract_pages
   - Fuzzy-match doc.context + doc.question against each page; pick best with confidence
-  - If confidence >= 0.6: pdf_anchor = Some(PdfAnchor { page_number: Some, .. })
-  - If confidence <  0.6: pdf_anchor = Some(PdfAnchor { page_number: None,  .. })
-  - If PDF read/extract fails: log WARN, increment pdfs_failed; pdf_anchor = Some(file-level)
+  - If confidence >= 0.6: pdf_anchor with page_number=Some, fallback_reason=None
+  - If confidence <  0.6: pdf_anchor with page_number=None, fallback_reason=LowConfidence
+  - If PDF read/extract errors: pdf_anchor with fallback_reason=PdfReadFailed, increment pdfs_failed
   - Embedder::embed_documents(&search_texts) batches all 256 search_texts in one GGUF call
 
 Phase 3: Commit (single transaction per batch)
@@ -565,9 +588,13 @@ The "Context: / Question: / Answer:" prefixes are soft signals to the embedder a
 3. **Fuzzy match.** For each `Document`, build a `target = doc.context.unwrap_or("") + " " + doc.question.unwrap_or("")`, truncated to 500 chars. Compute a similarity score against each page's text using:
    - Normalize both to lowercase, strip non-alphanumeric.
    - 3-gram set overlap (Jaccard) — fast, robust to OCR-style minor differences.
-4. **Confidence threshold.** Pick the highest-scoring page; if its score >= 0.6, anchor with `page_number = Some(n), confidence = score`. If below, anchor with `page_number = None, confidence = score` (file-level fallback).
+4. **Confidence threshold.** Pick the highest-scoring page. If its score >= 0.6 → `PdfAnchor { page_number: Some(n), confidence: score, fallback_reason: None }`. If below → `PdfAnchor { page_number: None, confidence: score, fallback_reason: Some(LowConfidence) }`.
 
-5. **PDF read failure.** If `BlobStore::get` or `extract_pages` errors out: anchor with `pdf_path` only, `page_number = None`, `confidence = 0.0`. The `pdfs_failed` counter increments. Ingest does not abort.
+5. **PDF read failure.** If `BlobStore::get` or `extract_pages` errors out → `PdfAnchor { pdf_path: <path>, page_number: None, confidence: 0.0, fallback_reason: Some(PdfReadFailed) }`. The `pdfs_failed` counter increments. Ingest does not abort.
+
+6. **PDF not found.** If the derived PDF path does not exist in the blob store → `PdfAnchor { pdf_path: <path>, page_number: None, confidence: 0.0, fallback_reason: Some(PdfNotFound) }`. Distinct from `PdfReadFailed` because the action is different: not-found usually means the markdown-to-PDF mapping rule is wrong for this corpus subset; read-failure means the PDF is present but unparseable.
+
+Downstream consumers (the API, UI badges, the CLI `--explain`) can distinguish all three fallback paths via `fallback_reason` and decide what to surface.
 
 ### 7.5 Failure modes & error handling
 
@@ -683,11 +710,9 @@ Response:
 }
 ```
 
-Validation:
-- `text` required.
-- `mode` defaults to `Hybrid` if omitted.
-- `mode == Filter` with `text` set → `BadInput`.
-- `text` set with `mode == Filter` → `BadInput`.
+Validation (matches §6.3 exactly):
+- `text` required. `text = null` or omitted → `BadInput` with `error.code = "bad_input"`, `details.field = "text"`.
+- `mode` defaults to `Hybrid` if omitted. Accepted values: `Hybrid`, `Bm25Only`, `VectorOnly`. `mode = Filter` on this endpoint → `BadInput` (use `POST /v1/filter` instead).
 - `limit` clamped to `[1, 100]`.
 - `filters.subject` recommended but not required; absence means cross-subject search.
 
@@ -764,14 +789,29 @@ Mapping:
 
 ### 9.1 Parity invariant
 
-Every API capability has a matching CLI subcommand. A workspace-level integration test enumerates both surfaces and asserts equivalence:
+Every API capability has a matching CLI subcommand. **Exceptions** are the write-side commands `ingest` and `serve`, which are CLI-only by design (see §2 non-goals: no HTTP ingestion in v1). The parity test maintains an explicit allowlist for these:
 
 ```rust
+/// Commands that intentionally have no API counterpart in v1.
+/// New entries here require justification in the PR that adds them.
+const CLI_ONLY_COMMANDS: &[&str] = &["ingest", "serve"];
+
 #[test]
 fn cli_api_parity() {
-    let api:   HashSet<_> = rex_api::declared_routes()   .into_iter().map(canon).collect();
-    let cli:   HashSet<_> = rex_cli::declared_commands().into_iter().map(canon).collect();
-    assert_eq!(api, cli, "every API route must have a matching CLI command");
+    let api: HashSet<_> = rex_api::declared_routes()
+        .into_iter()
+        .map(canon)
+        .collect();
+
+    let cli: HashSet<_> = rex_cli::declared_commands()
+        .into_iter()
+        .map(canon)
+        .filter(|c| !CLI_ONLY_COMMANDS.contains(&c.as_str()))
+        .collect();
+
+    assert_eq!(api, cli,
+        "every API route must have a matching CLI command and vice versa \
+         (excluding CLI_ONLY_COMMANDS: {:?})", CLI_ONLY_COMMANDS);
 }
 ```
 
@@ -805,7 +845,7 @@ Each subcommand emits a human-readable pretty default and a `--json` flag that e
 
 `rex search`, `rex filter`, `rex get*`, etc. run **in-process**: open `rex.db` directly, instantiate adapters, invoke `SearchService`. The embedder is **lazily loaded** — only constructed when the subcommand actually needs to embed (e.g., `rex search` in `Hybrid` or `VectorOnly` mode). Filter-only subcommands never load the model.
 
-A `--remote http://...` flag is stubbed in clap but returns `"not implemented"` in v1, reserving the namespace for a future client-mode where the CLI talks to a deployed `rex serve`.
+A `--remote http://...` flag is stubbed in clap but exits with code `64` (`EX_USAGE` / "command-line usage error" per `sysexits.h`) and message `"--remote is not implemented in v1; the CLI runs in-process"` in v1. This reserves the namespace for a future client-mode where the CLI talks to a deployed `rex serve`.
 
 ## 10. Storage schema (`rex-sqlite`)
 
@@ -834,11 +874,13 @@ CREATE TABLE documents (
     mark          INTEGER,
     options_json  TEXT,
     keywords_json TEXT NOT NULL DEFAULT '[]',
-    pdf_path      TEXT,
-    pdf_page      INTEGER,
-    pdf_bbox_json TEXT,
-    pdf_confidence REAL,
-    created_at    INTEGER NOT NULL
+    pdf_path             TEXT,
+    pdf_page             INTEGER,
+    pdf_bbox_json        TEXT,
+    pdf_confidence       REAL,
+    pdf_fallback_reason  TEXT CHECK (pdf_fallback_reason IS NULL
+                                  OR pdf_fallback_reason IN ('LowConfidence','PdfReadFailed','PdfNotFound')),
+    created_at           INTEGER NOT NULL
 );
 CREATE INDEX idx_documents_subject ON documents(subject_id);
 CREATE INDEX idx_documents_kind    ON documents(subject_id, kind);
@@ -930,6 +972,15 @@ GROUP BY value
 ORDER BY COUNT(*) DESC;
 ```
 
+**Implementation spike note — verify `WHERE id IN (CTE)` push-down efficiency.** The filter push-down claim in §6.7 assumes both FTS5 and `sqlite-vec` push the `document_id IN filtered` predicate into their respective virtual-table scans, not after them. This is the documented behavior for both as of their current versions, but it must be verified empirically as the first task of `rex-sqlite` implementation:
+
+1. Build an index of 100k synthetic documents.
+2. Run a heavily-filtered query (filter resolves to <100 ids).
+3. Measure that FTS5 BM25 ranking and `sqlite-vec` KNN both execute in time proportional to the filtered-set size, not the full corpus size.
+4. If the push-down does not occur efficiently, fall back to materializing the filtered set into a temp table referenced by both queries (one extra round trip, but consistent latency).
+
+If this spike fails, the §6.7 invariant still holds (filters are applied at the storage layer), but the perf characterization in §10.5 will need revisiting.
+
 ### 10.4 Dimension safety
 
 `document_vec.embedding` is typed `FLOAT[768]` (embeddinggemma-300M dimension). At server startup, `rex-cli` calls `embedder.dimension()` and compares to `schema_meta.vector_dim`. If they disagree, the server refuses to start with:
@@ -997,12 +1048,12 @@ rex_process_open_fds                                    gauge
 rex_component_memory_bytes{component}                   gauge       # sqlite_cache|embedder_weights|reranker_weights|lru_pdf_pages
 ```
 
-Process metrics are gathered via the `sysinfo` crate. Component metrics:
+Process metrics are gathered via the `sysinfo` crate. Component metrics (best-effort estimates, not exact attributions):
 
-- `sqlite_cache`: derived from `PRAGMA cache_size` × current page utilization.
-- `embedder_weights`: constant after model load (model file size).
-- `reranker_weights`: constant after model load.
-- `lru_pdf_pages`: `len * average_entry_size` from the page-slicing LRU.
+- `sqlite_cache`: configured upper bound = `PRAGMA cache_size` × `PRAGMA page_size`, sampled once at startup and on PRAGMA changes. SQLite does not expose cheap per-page utilization, so this is an *upper bound* on the cache footprint, not the live size. Documented as such in dashboards.
+- `embedder_weights`: constant after model load = the GGUF file size of the loaded embedder.
+- `reranker_weights`: constant after model load = the GGUF file size of the loaded reranker (0 if `--no-reranker`).
+- `lru_pdf_pages`: `len * average_entry_size` from the page-slicing LRU. Average entry size is computed as a running mean of inserted entries' byte length.
 
 ### 11.4 Deployment shape
 
