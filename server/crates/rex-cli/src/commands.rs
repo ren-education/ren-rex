@@ -83,6 +83,13 @@ async fn ingest(cli: &Cli, args: &IngestArgs) -> Result<()> {
         stats.rows_skipped,
         stats.took_ms as f64 / 1000.0
     );
+    if stats.dangling_parent_nulled + stats.dangling_depends_pruned > 0 {
+        eprintln!(
+            "  refs: {} dangling parent_id nulled, {} dangling depends_on pruned \
+             (parents of these refs were themselves skipped)",
+            stats.dangling_parent_nulled, stats.dangling_depends_pruned,
+        );
+    }
     eprintln!(
         "  pdfs: {} seen, {} anchored at page level, {} low-confidence, {} read-failed, {} not-found",
         stats.pdfs_seen,
