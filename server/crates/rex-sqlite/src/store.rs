@@ -156,6 +156,11 @@ impl ItemStore for SqliteStore {
     async fn put(&self, docs: &[Document]) -> Result<()> {
         let conn = self.conn.lock().unwrap();
         let tx = conn.unchecked_transaction().map_err(map_err)?;
+        // Defer FK checks to commit time. Within a batch, a child question
+        // (parent_id = X) can land before its parent (id = X) in the iteration
+        // order; we don't want SQLite to reject the child mid-transaction.
+        // At commit, all rows are present so the FK check passes.
+        tx.execute("PRAGMA defer_foreign_keys = ON", []).map_err(map_err)?;
         for d in docs {
             Self::ensure_subject(&tx, &d.subject).map_err(map_err)?;
             let bbox_json = d
