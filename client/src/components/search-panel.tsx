@@ -261,7 +261,17 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
         <div className="flex flex-wrap items-center gap-3">
           <Select value={subject} onValueChange={(v) => setSubject(v ?? "")}>
             <SelectTrigger className="w-fit min-w-44">
-              <SelectValue placeholder="All subjects" />
+              {/* base-ui's SelectValue shows the raw value string by default,
+                  so even though SelectItem renders formatSubject(id), the
+                  trigger would still say "gp". Pass a render fn so the
+                  trigger goes through the same mapping. */}
+              <SelectValue placeholder="All subjects">
+                {(value) =>
+                  !value || value === "__all__"
+                    ? "All subjects"
+                    : formatSubject(value)
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">All subjects</SelectItem>
