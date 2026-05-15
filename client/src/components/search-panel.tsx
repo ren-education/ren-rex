@@ -415,7 +415,6 @@ function buildFilters(subject: string, selections: FacetSelections): Filters {
   if (selections.schools?.length)        f.schools        = selections.schools;
   if (selections.paper_types?.length)    f.paper_types    = selections.paper_types;
   if (selections.source_types?.length)   f.source_types   = selections.source_types;
-  if (selections.exam_systems?.length)   f.exam_systems   = selections.exam_systems;
   if (selections.question_types?.length) f.question_types = selections.question_types;
   return f;
 }
@@ -427,7 +426,6 @@ function hasAnySelection(filters: Filters): boolean {
       || filters.schools?.length
       || filters.paper_types?.length
       || filters.source_types?.length
-      || filters.exam_systems?.length
       || filters.question_types?.length,
   );
 }

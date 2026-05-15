@@ -4,13 +4,16 @@ import { useEffect, useState } from "react";
 import { tagValues } from "./rex";
 import type { Filters } from "./types";
 
-/** The six tag fields rex's domain owns; keep in sync with rex-domain's TagField. */
+/**
+ * Tag fields exposed in the FacetBar. rex-domain's TagField has six
+ * canonical fields; here we omit `exam_systems` (only ever "a-level"
+ * in the current corpus — not useful as a filter).
+ */
 export const FACET_FIELDS = [
   "topics",
   "schools",
   "paper_types",
   "source_types",
-  "exam_systems",
   "question_types",
 ] as const;
 

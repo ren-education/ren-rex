@@ -18,7 +18,6 @@ const FIELD_LABEL: Record<FacetField, string> = {
   schools:        "Schools",
   paper_types:    "Paper",
   source_types:   "Source",
-  exam_systems:   "Exam",
   question_types: "Question",
 };
 
