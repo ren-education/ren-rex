@@ -1553,6 +1553,7 @@ name = "rex-search"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bytes",
  "futures",
  "proptest",
  "rex-domain",
@@ -1562,6 +1563,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

@@ -17,8 +17,10 @@ tracing.workspace = true
 async-trait.workspace = true
 futures.workspace = true
 thiserror.workspace = true
+bytes.workspace = true
 
 [dev-dependencies]
 rex-search = { path = ".", features = ["fakes"] }
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
+uuid = { version = "1", features = ["v4"] }
 proptest = "1"
