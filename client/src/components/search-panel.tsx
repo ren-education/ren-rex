@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { PdfViewerLoader } from "@/components/pdf-viewer-loader";
 import type { SearchHit, SearchMeta, SearchMode, SubjectStats } from "@/lib/types";
 
 interface Props {
@@ -59,22 +61,6 @@ const DEMO_HITS: SearchHit[] = [
       { field: "Question", text: 'To what extent has the end of the <em class="match">Cold</em> <em class="match">War</em> influenced the historical debate on the origins of the <em class="match">Cold</em> <em class="match">War</em>?' },
     ],
   },
-  {
-    document: {
-      id: "demo-3", subject: "h2history", kind: "Question",
-      parent_id: null, number: "4", source: "content/prelims/2018/NJC/X.md",
-      context: "Concerns the United Nations' role in collective security across the two periods.",
-      question: "To what extent do you agree that, as compared to the Cold War period, the United Nations was a greater success in maintaining international peace?",
-      answer: null, notes: null, mark: 15, options: null, keywords: [],
-      tags: { topics: ["cold-war"], question_types: [], exam_systems: [], paper_types: ["paper-1"], schools: ["njc"], source_types: ["prelims"] },
-      pdf_anchor: { pdf_path: "h2history/prelims/2018/NJC_H2_HIST_P1_QP.pdf", page_number: 3, bbox: null, confidence: 0.78, fallback_reason: null },
-    },
-    score: 2.137,
-    scores: { bm25: 2.137, vector: null, rerank: null },
-    highlights: [
-      { field: "Question", text: 'To what extent do you agree that, as compared to the <em class="match">Cold</em> <em class="match">War</em> period, the <em class="match">United</em> <em class="match">Nations</em> was a greater success…' },
-    ],
-  },
 ];
 
 const DEMO_META: SearchMeta = {
@@ -89,8 +75,11 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
   const [mode, setMode] = useState<SearchMode>("Hybrid");
   const [hits, setHits] = useState<SearchHit[]>(apiOnline ? [] : DEMO_HITS);
   const [meta, setMeta] = useState<SearchMeta | null>(apiOnline ? null : DEMO_META);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const selectedHit = hits.find((h) => h.document.id === selectedId) ?? null;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -116,6 +105,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
         const data = await res.json();
         setHits(data.hits);
         setMeta(data.meta);
+        setSelectedId(data.hits[0]?.document.id ?? null);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
       }
@@ -213,24 +203,39 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
         </div>
       )}
 
-      {/* ─── Results ────────────────────────────────────────────── */}
-      <ul className="flex flex-col">
-        {hits.map((hit) => (
-          <li key={hit.document.id} className="paper">
-            <HitCard hit={hit} />
-          </li>
-        ))}
-        {!hits.length && !error && (
-          <li className="py-10 text-center text-sm text-muted-foreground italic">
-            Type a query above to search the archive.
-          </li>
-        )}
-      </ul>
+      {/* ─── Split: results | viewer ────────────────────────────── */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr] xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        <ul className="flex flex-col">
+          {hits.map((hit) => (
+            <li
+              key={hit.document.id}
+              className={cn(
+                "paper cursor-pointer transition-colors",
+                hit.document.id === selectedId
+                  ? "bg-accent/30 -mx-3 px-3"
+                  : "hover:bg-accent/15 -mx-3 px-3",
+              )}
+              onClick={() => setSelectedId(hit.document.id)}
+            >
+              <HitCard hit={hit} isSelected={hit.document.id === selectedId} />
+            </li>
+          ))}
+          {!hits.length && !error && (
+            <li className="py-10 text-center text-sm text-muted-foreground italic">
+              Type a query above to search the archive.
+            </li>
+          )}
+        </ul>
+
+        <div className="lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
+          <PdfViewerLoader hit={selectedHit} />
+        </div>
+      </div>
     </section>
   );
 }
 
-function HitCard({ hit }: { hit: SearchHit }) {
+function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
   const d = hit.document;
   const metaBits = [
     d.number && `Q ${d.number}`,
@@ -255,7 +260,10 @@ function HitCard({ hit }: { hit: SearchHit }) {
 
       {hit.highlights.length > 0 ? (
         <h2
-          className="font-heading text-[19px] leading-snug"
+          className={cn(
+            "font-heading text-[19px] leading-snug",
+            isSelected && "text-foreground",
+          )}
           dangerouslySetInnerHTML={{ __html: hit.highlights[0].text }}
         />
       ) : (
@@ -275,12 +283,9 @@ function HitCard({ hit }: { hit: SearchHit }) {
         {d.pdf_anchor && (
           <span className="inline-flex items-center gap-1.5">
             <FileText className="size-3.5" />
-            <a
-              className="border-b border-accent text-primary hover:border-primary"
-              href="#"
-            >
+            <span className={cn("text-primary", isSelected && "underline underline-offset-4")}>
               {d.pdf_anchor.pdf_path.split("/").pop()}
-            </a>
+            </span>
             {d.pdf_anchor.fallback_reason && (
               <span className="text-destructive/70 italic">
                 ({d.pdf_anchor.fallback_reason})

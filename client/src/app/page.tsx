@@ -25,7 +25,7 @@ export default async function Home() {
   const totalItems = subjects.reduce((n, s) => n + s.item_count, 0);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-6 py-14">
+    <main className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-10 px-6 py-14">
       <header className="flex items-baseline justify-between border-b border-border pb-6">
         <div className="font-heading text-3xl tracking-tight">
           r<span className="text-primary italic">e</span>x
