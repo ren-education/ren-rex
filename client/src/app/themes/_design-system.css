@@ -1,0 +1,78 @@
+/* ─────────────────────────────────────────────────────────────────────
+   rex · design-system base
+   ─────────────────────────────────────────────────────────────────────
+
+   Rules that are universal across every theme: typography mapping,
+   match-highlight, numeric/mono utility, smallcaps meta label.
+
+   These styles deliberately use semantic tokens (var(--accent), etc.)
+   — never raw color values — so they cooperate with whichever theme is
+   active. If a future theme needs to override one of these, it can
+   raise specificity via `[data-theme="x"] .smallcaps { ... }`.
+   ───────────────────────────────────────────────────────────────────── */
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  /* Headlines default to the serif family. Opt out per-element with
+     `font-sans` when a heading should stay in the UI sans (e.g. tiny
+     small-caps section labels). */
+  h1, h2, h3, .font-heading {
+    font-family: var(--font-serif), ui-serif, "Iowan Old Style", Georgia, serif;
+    font-feature-settings: "kern", "liga", "calt";
+  }
+
+  /* Tabular-mono utility for clusters of numbers (scores, page numbers,
+     marks, timing readouts). */
+  .num {
+    font-family: var(--font-mono), ui-monospace, "JetBrains Mono", Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Search match highlights. The server returns <em> tags inside
+     highlights[].text, so we style globally and result components can
+     render via dangerouslySetInnerHTML without rewrapping. */
+  em.match,
+  .hit em,
+  [data-slot="hit"] em {
+    font-style: normal;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    padding: 0 2px;
+    border-radius: 2px;
+  }
+
+  /* Per-hit metadata strip: tiny uppercase smallcaps in muted color. */
+  .smallcaps {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--muted-foreground);
+  }
+
+  /* Paper-style card: hairline border, no shadow, no inset ring. Used
+     for the dense result list where a stack of shadowed cards would
+     feel too busy. Compose with shadcn's <Card>: <Card className="paper">. */
+  .paper {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    --tw-ring-shadow: 0 0 #0000;
+    border-radius: 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding-bottom: 1.25rem;
+  }
+
+  /* Italic context line, often used in result cards to set off the
+     "Context: ..." prelude from the question proper. */
+  .leadin {
+    font-family: var(--font-serif), ui-serif, Georgia, serif;
+    font-style: italic;
+    color: var(--muted-foreground);
+  }
+}

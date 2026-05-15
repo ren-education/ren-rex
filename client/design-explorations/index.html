@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rex · A · color variants</title>
+<style>
+  :root {
+    --bg: #fafafa; --fg: #1a1a1a; --fg-2: #5e5e5e; --fg-3: #9a9a9a; --rule: #e6e6e6;
+    --sans: "Inter", -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-family: var(--sans); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 64px 32px; }
+  h1 { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 8px; }
+  p.lede { color: var(--fg-2); font-size: 16px; margin: 0 0 32px; max-width: 720px; line-height: 1.55; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+  a.card {
+    display: block; padding: 24px; background: white; border: 1px solid var(--rule); border-radius: 10px;
+    text-decoration: none; color: inherit; transition: border-color 0.15s, transform 0.15s;
+  }
+  a.card:hover { border-color: #c0c0c0; transform: translateY(-2px); }
+
+  .swatch-row { display: flex; gap: 6px; margin-bottom: 14px; }
+  .sw { width: 36px; height: 36px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.07); }
+  .sw-label { font-size: 10px; color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; text-align: center; }
+  .col { display: flex; flex-direction: column; align-items: center; }
+
+  .card h2 { font-size: 18px; margin: 0 0 4px; }
+  .card .codename { font-family: ui-monospace, Menlo, monospace; color: var(--fg-3); font-size: 12px; margin-bottom: 8px; }
+  .card .vibe { color: var(--fg-2); font-size: 14px; margin: 0 0 12px; line-height: 1.5; }
+  .card .feel { font-size: 12px; color: var(--fg-3); font-style: italic; }
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--fg-3); font-size: 13px; line-height: 1.6; }
+  footer code { background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>rex · direction A · color variants</h1>
+  <p class="lede">Same Reading Room layout — serif headlines, calm density, sidebar facets, hairline rules. Only the color tokens change. Each card is a clickable mockup; the top ribbon inside each lets you jump between siblings.</p>
+
+  <div class="grid">
+
+    <a class="card" href="a1-warm-paper.html">
+      <div class="swatch-row">
+        <div class="col"><div class="sw" style="background:#faf6ef"></div><div class="sw-label">paper</div></div>
+        <div class="col"><div class="sw" style="background:#1c1a15"></div><div class="sw-label">ink</div></div>
+        <div class="col"><div class="sw" style="background:#7a4a25"></div><div class="sw-label">accent</div></div>
+        <div class="col"><div class="sw" style="background:#f5e6d4"></div><div class="sw-label">soft</div></div>
+        <div class="col"><div class="sw" style="background:#d9d0bf"></div><div class="sw-label">rule</div></div>
+      </div>
+      <h2>A1 · Warm Paper</h2>
+      <div class="codename">warm-paper + burnt-sienna</div>
+      <p class="vibe">Cream paper, near-black ink, burnt sienna accent. The original A — a reading-carrel in late afternoon light.</p>
+      <div class="feel">Feel: classical, scholarly, calm.</div>
+    </a>
+
+    <a class="card" href="a2-pearl-indigo.html">
+      <div class="swatch-row">
+        <div class="col"><div class="sw" style="background:#f4f1e8"></div><div class="sw-label">paper</div></div>
+        <div class="col"><div class="sw" style="background:#1a1f33"></div><div class="sw-label">ink</div></div>
+        <div class="col"><div class="sw" style="background:#8b1538"></div><div class="sw-label">accent</div></div>
+        <div class="col"><div class="sw" style="background:#f5dee5"></div><div class="sw-label">soft</div></div>
+        <div class="col"><div class="sw" style="background:#d6cfb9"></div><div class="sw-label">rule</div></div>
+      </div>
+      <h2>A2 · Pearl & Indigo</h2>
+      <div class="codename">pearl-paper + oxblood</div>
+      <p class="vibe">Pearl-cream paper, deep indigo ink, oxblood-red accent. Like a Renaissance manuscript or vintage Penguin paperback.</p>
+      <div class="feel">Feel: literary, weighty, slightly dramatic.</div>
+    </a>
+
+    <a class="card" href="a3-dark-mahogany.html">
+      <div class="swatch-row">
+        <div class="col"><div class="sw" style="background:#1a1310"></div><div class="sw-label">paper</div></div>
+        <div class="col"><div class="sw" style="background:#ede1cb"></div><div class="sw-label">ink</div></div>
+        <div class="col"><div class="sw" style="background:#d4a04a"></div><div class="sw-label">accent</div></div>
+        <div class="col"><div class="sw" style="background:#3d2f1f"></div><div class="sw-label">soft</div></div>
+        <div class="col"><div class="sw" style="background:#3a2c22"></div><div class="sw-label">rule</div></div>
+      </div>
+      <h2>A3 · Dark Mahogany</h2>
+      <div class="codename">mahogany + lamp-gold</div>
+      <p class="vibe">Deep brown paper, warm cream ink, lamp-gold accent. The dark-mode answer to A1 — wood-paneled library after sunset.</p>
+      <div class="feel">Feel: intimate, focused, late-night study.</div>
+    </a>
+
+    <a class="card" href="a4-sage-linen.html">
+      <div class="swatch-row">
+        <div class="col"><div class="sw" style="background:#f1ede0"></div><div class="sw-label">paper</div></div>
+        <div class="col"><div class="sw" style="background:#1f2a1c"></div><div class="sw-label">ink</div></div>
+        <div class="col"><div class="sw" style="background:#4a6b3d"></div><div class="sw-label">accent</div></div>
+        <div class="col"><div class="sw" style="background:#dde5d0"></div><div class="sw-label">soft</div></div>
+        <div class="col"><div class="sw" style="background:#cdc7b3"></div><div class="sw-label">rule</div></div>
+      </div>
+      <h2>A4 · Sage & Linen</h2>
+      <div class="codename">linen + sage-green</div>
+      <p class="vibe">Linen-beige paper, deep forest ink, sage green accent. Botanical/herbarium energy. Quieter than A1.</p>
+      <div class="feel">Feel: pastoral, grounded, considered.</div>
+    </a>
+
+  </div>
+
+  <footer>
+    Layout is identical across all four (shared via <code>_shared.css</code>); only the <code>:root</code> color tokens differ in each variant HTML.
+    Once you pick one, those tokens become the seed of the production design system in <code>client/</code>.
+  </footer>
+</div>
+</body>
+</html>

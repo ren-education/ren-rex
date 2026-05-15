@@ -1,0 +1,130 @@
+/* ─────────────────────────────────────────────────────────────────────
+   Theme: Sage & Linen (A4)
+   ─────────────────────────────────────────────────────────────────────
+
+   Activate via `<html data-theme="sage-linen">`.
+   Dark variant kicks in when the `dark` class is also applied to <html>.
+
+   Reference palette (the layer 1 raw values; never used directly by
+   components — only by the semantic mappings below). Kept here for
+   maintainability; future tooling could split into a separate file.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="sage-linen"] {
+  /* ── Reference palette (the raw colors A4 owns) ─────────────── */
+  --sage-50:   oklch(0.95 0.020 130);
+  --sage-100:  oklch(0.90 0.032 125);
+  --sage-300:  oklch(0.74 0.060 132);
+  --sage-500:  oklch(0.50 0.078 135);
+  --sage-700:  oklch(0.42 0.080 135);
+
+  --linen-50:  oklch(0.965 0.016 90);
+  --linen-100: oklch(0.945 0.018 92);
+  --linen-200: oklch(0.905 0.020 90);
+  --linen-300: oklch(0.820 0.022 95);
+  --linen-500: oklch(0.500 0.018 115);
+
+  --forest-300: oklch(0.500 0.020 130);
+  --forest-500: oklch(0.300 0.025 140);
+  --forest-700: oklch(0.245 0.025 142);
+
+  --oxblood-500: oklch(0.50 0.140 28);
+
+  /* ── Semantic mappings (the layer 2 aliases components consume) ── */
+  --background:           var(--linen-100);
+  --foreground:           var(--forest-700);
+
+  --card:                 var(--linen-50);
+  --card-foreground:      var(--forest-700);
+  --popover:              var(--linen-50);
+  --popover-foreground:   var(--forest-700);
+
+  --primary:              var(--sage-500);
+  --primary-foreground:   var(--linen-50);
+
+  --secondary:            var(--linen-200);
+  --secondary-foreground: var(--forest-500);
+
+  --muted:                var(--linen-200);
+  --muted-foreground:     var(--linen-500);
+
+  --accent:               var(--sage-100);
+  --accent-foreground:    var(--sage-700);
+
+  --destructive:          var(--oxblood-500);
+
+  --border:               var(--linen-300);
+  --input:                var(--linen-300);
+  --ring:                 var(--sage-500);
+
+  --chart-1: oklch(0.78 0.060 130);
+  --chart-2: oklch(0.66 0.070 132);
+  --chart-3: oklch(0.55 0.080 135);
+  --chart-4: oklch(0.44 0.075 138);
+  --chart-5: oklch(0.32 0.060 142);
+
+  --sidebar:                       var(--linen-100);
+  --sidebar-foreground:            var(--forest-700);
+  --sidebar-primary:               var(--sage-500);
+  --sidebar-primary-foreground:    var(--linen-50);
+  --sidebar-accent:                var(--sage-100);
+  --sidebar-accent-foreground:     var(--sage-700);
+  --sidebar-border:                var(--linen-300);
+  --sidebar-ring:                  var(--sage-500);
+
+  --radius: 0.5rem;
+}
+
+/* ── Dark variant: deep forest paper, bright sage accent ──────────── */
+[data-theme="sage-linen"].dark {
+  /* dark-mode-specific raw colors */
+  --d-forest-50:  oklch(0.93 0.020 92);
+  --d-forest-100: oklch(0.70 0.020 100);
+  --d-forest-300: oklch(0.330 0.030 135);
+  --d-forest-500: oklch(0.270 0.020 140);
+  --d-forest-700: oklch(0.220 0.022 142);
+
+  --d-sage-300: oklch(0.78 0.080 130);
+  --d-sage-500: oklch(0.68 0.080 130);
+
+  --background:           var(--d-forest-700);
+  --foreground:           var(--d-forest-50);
+
+  --card:                 var(--d-forest-500);
+  --card-foreground:      var(--d-forest-50);
+  --popover:              var(--d-forest-500);
+  --popover-foreground:   var(--d-forest-50);
+
+  --primary:              var(--d-sage-500);
+  --primary-foreground:   var(--d-forest-700);
+
+  --secondary:            oklch(0.310 0.022 140);
+  --secondary-foreground: var(--d-forest-50);
+
+  --muted:                oklch(0.310 0.022 140);
+  --muted-foreground:     var(--d-forest-100);
+
+  --accent:               var(--d-forest-300);
+  --accent-foreground:    var(--d-sage-300);
+
+  --destructive:          oklch(0.62 0.140 28);
+
+  --border: oklch(1 0 0 / 10%);
+  --input:  oklch(1 0 0 / 14%);
+  --ring:   var(--d-sage-500);
+
+  --chart-1: oklch(0.82 0.050 128);
+  --chart-2: oklch(0.70 0.070 130);
+  --chart-3: oklch(0.58 0.080 132);
+  --chart-4: oklch(0.46 0.075 135);
+  --chart-5: oklch(0.34 0.050 140);
+
+  --sidebar:                       var(--d-forest-700);
+  --sidebar-foreground:            var(--d-forest-50);
+  --sidebar-primary:               var(--d-sage-500);
+  --sidebar-primary-foreground:    var(--d-forest-700);
+  --sidebar-accent:                var(--d-forest-300);
+  --sidebar-accent-foreground:     var(--d-sage-300);
+  --sidebar-border:                oklch(1 0 0 / 10%);
+  --sidebar-ring:                  var(--d-sage-500);
+}

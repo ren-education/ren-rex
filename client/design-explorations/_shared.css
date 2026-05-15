@@ -1,0 +1,85 @@
+/* ─────────────────────────────────────────────────────────────────
+   Shared layout for direction A — Reading Room
+   Each variant HTML overrides the :root color tokens.
+   ───────────────────────────────────────────────────────────────── */
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); }
+body { min-height: 100vh; line-height: 1.55; }
+
+.shell { max-width: 1240px; margin: 0 auto; padding: 32px 40px 64px; }
+
+/* ─── Header ────────────────────────────────────────────────────── */
+header { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 24px; border-bottom: 1px solid var(--rule); }
+.brand { font-family: var(--serif); font-size: 28px; letter-spacing: -0.01em; }
+.brand em { font-style: italic; color: var(--accent); }
+.crumbs { font-family: var(--sans); font-size: 13px; color: var(--ink-3); }
+.crumbs strong { color: var(--ink-2); font-weight: 500; }
+
+/* ─── Search bar ────────────────────────────────────────────────── */
+.search { margin: 32px 0 28px; display: flex; gap: 14px; align-items: center; }
+.search input {
+  flex: 1; font-family: var(--serif); font-size: 22px;
+  border: none; border-bottom: 1.5px solid var(--ink); background: transparent;
+  padding: 10px 4px; color: var(--ink); outline: none;
+}
+.search input::placeholder { color: var(--ink-3); font-style: italic; }
+.modes { display: flex; gap: 4px; font-family: var(--sans); font-size: 12px; }
+.modes button {
+  background: transparent; border: 1px solid var(--rule); color: var(--ink-2);
+  padding: 6px 10px; border-radius: 2px; cursor: pointer; font-family: inherit; font-size: inherit;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.modes button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ─── Layout ────────────────────────────────────────────────────── */
+.layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; align-items: start; }
+
+/* ─── Sidebar ───────────────────────────────────────────────────── */
+aside { font-family: var(--sans); font-size: 13px; color: var(--ink-2); }
+aside h3 {
+  font-family: var(--sans); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink-3); font-weight: 600;
+  margin: 0 0 10px; padding-top: 18px; border-top: 1px solid var(--rule);
+}
+aside h3:first-child { padding-top: 0; border-top: none; }
+aside ul { list-style: none; padding: 0; margin: 0 0 16px; }
+aside li { display: flex; justify-content: space-between; padding: 4px 0; cursor: pointer; }
+aside li:hover { color: var(--ink); }
+aside li.on { color: var(--accent); }
+aside li .count { color: var(--ink-3); font-variant-numeric: tabular-nums; font-size: 12px; }
+aside li.on .count { color: var(--accent); }
+
+/* ─── Results ───────────────────────────────────────────────────── */
+.summary { font-family: var(--sans); font-size: 13px; color: var(--ink-3); margin-bottom: 18px; }
+.summary strong { color: var(--ink); font-weight: 500; }
+.hit { padding: 26px 0; border-top: 1px solid var(--rule); }
+.hit:first-of-type { border-top: none; padding-top: 4px; }
+.hit .meta-row { font-family: var(--sans); font-size: 11px; color: var(--ink-3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+.hit h2 { font-family: var(--serif); font-size: 21px; line-height: 1.35; margin: 0 0 12px; font-weight: 500; }
+.hit em.match { background: var(--accent-soft); color: var(--accent); font-style: normal; padding: 0 2px; border-radius: 1px; }
+.hit .context { color: var(--ink-2); font-size: 16px; margin-bottom: 14px; font-style: italic; }
+.hit .source { display: flex; gap: 18px; font-family: var(--sans); font-size: 12px; color: var(--ink-3); }
+.hit .source a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+.hit .source a:hover { border-bottom-color: var(--accent); }
+.hit .scores { font-family: var(--mono); font-size: 11px; }
+
+/* ─── Variant ribbon ────────────────────────────────────────────── */
+.variant-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--ink); color: var(--paper);
+  padding: 6px 12px; font-family: var(--sans); font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  display: flex; gap: 16px; align-items: center; z-index: 10;
+}
+.variant-bar .swatch {
+  display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); border: 1px solid var(--paper);
+}
+.variant-bar a { color: var(--paper); opacity: 0.6; text-decoration: none; }
+.variant-bar a:hover { opacity: 1; }
+.variant-bar a.current { opacity: 1; font-weight: 600; }
+.shell { padding-top: 56px; }
+
+/* ─── Footer ────────────────────────────────────────────────────── */
+footer { margin-top: 64px; font-family: var(--sans); font-size: 11px; color: var(--ink-3); letter-spacing: 0.04em; }
