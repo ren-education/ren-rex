@@ -10,6 +10,22 @@ See the design spec: [`../docs/superpowers/specs/2026-05-15-rex-pdf-search-serve
 # Build
 cargo build --release --bin rex
 
+# Pre-flight schema check (recommended before ingest; no DB or embedder).
+# Buckets per-row errors by signature so a single systemic bug shows up once.
+# Exits 0 clean, 2 if any row fails, 1 on I/O error.
+./target/release/rex validate \
+  --subject h2history \
+  --workspace /path/to/ren-subjects/workspace
+
+# Validate a single file directly:
+./target/release/rex validate \
+  --file /path/to/ren-subjects/workspace/h2physics/reference/notes.jsonl \
+  --kind note
+
+# Machine-readable report for scripting / CI:
+./target/release/rex --json validate --subject h2history \
+  --workspace /path/to/ren-subjects/workspace > report.json
+
 # Ingest a subject (example: h2history from ren-subjects)
 ./target/release/rex ingest \
   --subject h2history \

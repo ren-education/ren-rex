@@ -6,13 +6,28 @@ use rex_domain::{
 };
 use rex_ingest::{IngestConfig, IngestServices};
 
-use crate::cli::{Cli, Cmd, FilterArgs, IngestArgs, SearchArgs, ServeArgs, TagValuesArgs};
+use crate::cli::{
+    Cli, Cmd, FilterArgs, IngestArgs, SearchArgs, ServeArgs, TagValuesArgs, ValidateArgs,
+};
 use crate::output;
 use crate::wire;
 
 pub async fn dispatch(cli: Cli) -> i32 {
+    // `validate` is the one subcommand that uses a 3-valued exit code, so
+    // dispatch it directly and bypass the Result<()> -> {0,1} mapping below.
+    if let Cmd::Validate(args) = &cli.cmd {
+        return match validate(&cli, args) {
+            Ok(code) => code,
+            Err(e) => {
+                eprintln!("error: {e:#}");
+                1
+            }
+        };
+    }
+
     let result: Result<()> = match &cli.cmd {
         Cmd::Ingest(args) => ingest(&cli, args).await,
+        Cmd::Validate(_) => unreachable!("handled above"),
         Cmd::Serve(args) => serve(&cli, args).await,
         Cmd::Search(args) => search(&cli, args).await,
         Cmd::Filter(args) => filter(&cli, args).await,
@@ -77,6 +92,40 @@ async fn ingest(cli: &Cli, args: &IngestArgs) -> Result<()> {
         stats.pdfs_not_found
     );
     Ok(())
+}
+
+/// Returns the process exit code directly: 0 clean, 2 if any rows failed.
+fn validate(cli: &Cli, args: &ValidateArgs) -> Result<i32> {
+    use rex_ingest::{validate_file, validate_subject, ValidateFileReport};
+
+    let reports: Vec<ValidateFileReport> = match (&args.file, &args.subject, &args.workspace) {
+        (Some(path), _, _) => {
+            let kind = args
+                .kind
+                .as_ref()
+                .context("--file requires --kind question|note")?
+                .to_domain();
+            let subject = SubjectId::new("validate".to_string());
+            vec![validate_file(path, kind, &subject)
+                .with_context(|| format!("reading {}", path.display()))?]
+        }
+        (None, Some(subject), Some(workspace)) => {
+            let sub = SubjectId::new(subject.clone());
+            validate_subject(&sub, workspace)
+                .with_context(|| format!("reading subject {} under {}", subject, workspace.display()))?
+                .files
+        }
+        _ => {
+            anyhow::bail!(
+                "specify either --file <path> --kind <question|note> \
+                 or --subject <id> --workspace <path>"
+            );
+        }
+    };
+
+    let any_failed = reports.iter().any(|r| !r.is_clean());
+    output::render_validate_reports(&reports, cli.json);
+    Ok(if any_failed { 2 } else { 0 })
 }
 
 async fn search(cli: &Cli, args: &SearchArgs) -> Result<()> {

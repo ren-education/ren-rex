@@ -32,6 +32,46 @@ pub struct Cli {
 pub enum Cmd {
     /// Ingest a subject's questions.jsonl + notes.jsonl into the index.
     Ingest(IngestArgs),
+    /// Dry-run schema check over JSONL files. No DB, no embedder, no PDFs.
+    ///
+    /// Use this BEFORE `rex ingest` to catch shape mismatches between the
+    /// input files and the rex JsonlRow schema. Validation reuses the exact
+    /// same serde parser as ingest (including `#[serde(deny_unknown_fields)]`
+    /// on both `JsonlRow` and `JsonlTags`), so "passes validate" guarantees
+    /// "will not be skipped by ingest". Typically sub-second on a 10k-row file.
+    ///
+    /// TWO INPUT MODES:
+    ///   * --file <path> --kind <question|note>
+    ///       Validate one JSONL file directly. `--kind` tells the
+    ///       domain-mapping step which body field to expect (`question`
+    ///       for questions.jsonl, `content` for notes.jsonl).
+    ///   * --subject <id> --workspace <path>
+    ///       Validate the standard pair under
+    ///       <workspace>/<subject>/reference/{questions,notes}.jsonl —
+    ///       the same layout `rex ingest` reads.
+    ///
+    /// OUTPUT:
+    ///   Errors are bucketed by signature (serde's `at line N column M`
+    ///   suffix is stripped) so a single systemic problem like "all 10k MCQ
+    ///   rows have object-shaped `options`" prints as one bucket with a
+    ///   count, not 10k log lines. Each bucket also includes a best-effort
+    ///   field name and the first few line numbers so you can
+    ///   `sed -n '3p' file.jsonl` and eyeball the row.
+    ///
+    /// EXIT CODES:
+    ///   0  every row parsed cleanly
+    ///   1  I/O error (file unreadable, etc.)
+    ///   2  one or more rows failed validation
+    ///
+    /// Pass `--json` (the global flag) to emit a machine-readable report
+    /// suitable for scripting or CI.
+    ///
+    /// EXAMPLES:
+    ///   rex validate --subject h2physics --workspace ren-subjects/workspace
+    ///   rex validate --file ren-subjects/workspace/h2physics/reference/notes.jsonl --kind note
+    ///   rex validate --json --subject h2history --workspace ren-subjects/workspace > report.json
+    #[command(verbatim_doc_comment)]
+    Validate(ValidateArgs),
     /// Serve the rex HTTP API. (Stub in v1 until rex-api lands.)
     Serve(ServeArgs),
     /// Hybrid / keyword / vector search.
@@ -70,6 +110,43 @@ pub struct IngestArgs {
     /// Embedding batch size.
     #[arg(long, default_value_t = 256)]
     pub batch_size: usize,
+}
+
+#[derive(Debug, clap::Args)]
+pub struct ValidateArgs {
+    /// Single JSONL file to validate. Mutually exclusive with `--subject`.
+    /// When used, `--kind` is required.
+    #[arg(long, conflicts_with_all = ["subject", "workspace"])]
+    pub file: Option<PathBuf>,
+
+    /// Row kind for `--file` mode. Determines which body field is expected
+    /// (`question` for questions, `content` for notes). Ignored in subject mode.
+    #[arg(long, value_enum, requires = "file")]
+    pub kind: Option<KindArg>,
+
+    /// Subject id (e.g. h2physics, h2history). Validates both
+    /// questions.jsonl and notes.jsonl under the workspace.
+    #[arg(long, requires = "workspace")]
+    pub subject: Option<String>,
+
+    /// ren-subjects/workspace path — the same path you'd pass to `rex ingest`.
+    #[arg(long, requires = "subject")]
+    pub workspace: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum KindArg {
+    Question,
+    Note,
+}
+
+impl KindArg {
+    pub fn to_domain(&self) -> rex_domain::DocumentKind {
+        match self {
+            KindArg::Question => rex_domain::DocumentKind::Question,
+            KindArg::Note => rex_domain::DocumentKind::Note,
+        }
+    }
 }
 
 #[derive(Debug, clap::Args)]

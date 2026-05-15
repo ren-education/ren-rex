@@ -1,6 +1,7 @@
 //! Pretty vs JSON output rendering.
 
 use rex_domain::{Document, FacetCount, PdfAnchor, SearchResponse, SubjectStats, TagValue};
+use rex_ingest::ValidateFileReport;
 
 pub fn render_search(resp: &SearchResponse, json: bool) {
     if json {
@@ -150,6 +151,54 @@ pub fn render_pdf_anchor(anchor: &PdfAnchor, json: bool) {
     println!("page      : {:?}", anchor.page_number);
     println!("confidence: {:.3}", anchor.confidence);
     println!("fallback  : {:?}", anchor.fallback_reason);
+}
+
+pub fn render_validate_reports(reports: &[ValidateFileReport], json: bool) {
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({ "files": reports }))
+                .unwrap_or_default()
+        );
+        return;
+    }
+    for r in reports {
+        let pct = if r.total_rows > 0 {
+            (r.failed_rows as f64 / r.total_rows as f64) * 100.0
+        } else {
+            0.0
+        };
+        let status = if r.is_clean() { "OK" } else { "FAIL" };
+        println!(
+            "[{}] {} ({}): {} rows, {} ok, {} failed ({:.1}%)",
+            status,
+            r.path.display(),
+            r.kind,
+            r.total_rows,
+            r.ok_rows,
+            r.failed_rows,
+            pct,
+        );
+        if r.buckets.is_empty() {
+            continue;
+        }
+        for b in &r.buckets {
+            let field = b
+                .field
+                .as_deref()
+                .map(|f| format!(" [field: {}]", f))
+                .unwrap_or_default();
+            println!("  {:>6}x  {}{}", b.count, b.signature, field);
+            let samples: Vec<String> = b.sample_lines.iter().map(|n| format!("L{}", n)).collect();
+            let extra = if b.count as usize > samples.len() {
+                format!(" (+ {} more)", b.count as usize - samples.len())
+            } else {
+                String::new()
+            };
+            println!("          first lines: {}{}", samples.join(", "), extra);
+        }
+        println!();
+    }
 }
 
 fn join_tags(tags: &[TagValue]) -> String {
