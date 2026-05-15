@@ -8,9 +8,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { FACET_FIELDS, type FacetField, type FacetMap } from "@/lib/use-facets";
-import type { Filters } from "@/lib/types";
+import type { DocumentKind, Filters } from "@/lib/types";
 
 /** Human-readable name for each facet field. */
 const FIELD_LABEL: Record<FacetField, string> = {
@@ -35,6 +36,7 @@ interface FacetBarProps {
   onToggle: (field: FacetField, value: string) => void;
   onClear: (field: FacetField) => void;
   onClearAll: () => void;
+  onKindChange: (kind: DocumentKind | null) => void;
 }
 
 export function FacetBar({
@@ -43,13 +45,30 @@ export function FacetBar({
   onToggle,
   onClear,
   onClearAll,
+  onKindChange,
 }: FacetBarProps) {
-  const anySelected = FACET_FIELDS.some((f) => selected(filters, f).length > 0);
+  const anySelected =
+    FACET_FIELDS.some((f) => selected(filters, f).length > 0) || !!filters.kind;
+  const currentKind: string = filters.kind ?? "All";
 
   return (
     <div className="flex flex-col gap-2">
       {/* Facet dropdowns */}
       <div className="flex flex-wrap items-center gap-1.5">
+        {/* Question / Note / All — three-state segmented control. Distinct
+            from the tag facets since `kind` is a single-select on the
+            Filters object (not a multi-select tag array). */}
+        <Tabs
+          value={currentKind}
+          onValueChange={(v) => onKindChange(v === "All" ? null : (v as DocumentKind))}
+        >
+          <TabsList>
+            <TabsTrigger value="All">All</TabsTrigger>
+            <TabsTrigger value="Question">Questions</TabsTrigger>
+            <TabsTrigger value="Note">Notes</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
         {FACET_FIELDS.map((field) => {
           const sel = selected(filters, field);
           const values = facets[field] ?? [];

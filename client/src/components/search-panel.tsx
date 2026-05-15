@@ -19,6 +19,7 @@ import { FacetBar } from "@/components/facet-bar";
 import { useFacets, type FacetField } from "@/lib/use-facets";
 import { filter as filterApi, search as searchApi } from "@/lib/rex";
 import type {
+  DocumentKind,
   Filters,
   SearchHit,
   SearchMeta,
@@ -100,6 +101,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
   const [subject, setSubject] = useState<string>(subjects[0]?.id ?? "");
   const [mode, setMode] = useState<SearchMode>("Hybrid");
   const [selections, setSelections] = useState<FacetSelections>({});
+  const [kind, setKind] = useState<DocumentKind | null>(null);
   const [hits, setHits] = useState<SearchHit[]>(apiOnline ? [] : DEMO_HITS);
   const [meta, setMeta] = useState<SearchMeta | null>(apiOnline ? null : DEMO_META);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -109,20 +111,22 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
   const selectedHit = hits.find((h) => h.document.id === selectedId) ?? null;
   const normalizedSubject = subject && subject !== "__all__" ? subject : "";
 
-  // Build the API Filters payload from the current selections + subject.
+  // Build the API Filters payload from the current selections + subject + kind.
   const apiFilters: Filters = useMemo(
-    () => buildFilters(normalizedSubject, selections),
-    [normalizedSubject, selections],
+    () => buildFilters(normalizedSubject, selections, kind),
+    [normalizedSubject, selections, kind],
   );
 
   // Fetch facet counts whenever subject or filters change. The hook strips
   // the current field's selections per-facet so each one stays explorable.
   const { facets } = useFacets(normalizedSubject, apiFilters);
 
-  // Reset facet selections when the subject changes — values from h2physics
-  // don't carry over to hcchem etc.
+  // Reset facet selections AND kind when the subject changes — values from
+  // h2physics don't carry over to hcchem etc., and a Notes-only filter
+  // could surprise the user after switching subjects.
   useEffect(() => {
     setSelections({});
+    setKind(null);
   }, [normalizedSubject]);
 
   function toggleFacet(field: FacetField, value: string) {
@@ -145,6 +149,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
 
   function clearAllFacets() {
     setSelections({});
+    setKind(null);
   }
 
   // Stable async runner used by both the explicit "Search" submit and the
@@ -281,6 +286,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
           onToggle={toggleFacet}
           onClear={clearFacet}
           onClearAll={clearAllFacets}
+          onKindChange={setKind}
         />
       )}
 
@@ -407,9 +413,14 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
 // Helpers
 // ────────────────────────────────────────────────────────────────────────
 
-function buildFilters(subject: string, selections: FacetSelections): Filters {
+function buildFilters(
+  subject: string,
+  selections: FacetSelections,
+  kind: DocumentKind | null,
+): Filters {
   const f: Filters = {};
   if (subject) f.subject = subject;
+  if (kind)    f.kind    = kind;
   if (selections.topics?.length)         f.topics         = selections.topics;
   if (selections.schools?.length)        f.schools        = selections.schools;
   if (selections.paper_types?.length)    f.paper_types    = selections.paper_types;
