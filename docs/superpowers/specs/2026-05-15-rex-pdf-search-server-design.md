@@ -612,7 +612,10 @@ Downstream consumers (the API, UI badges, the CLI `--explain`) can distinguish a
 ```
 $ rex ingest --subject h2physics --workspace ... --docs-root ...
 [1/3] Parsing JSONL                  7,446 questions, 312 notes, 8 rows skipped
-[2/3] Resolving PDF anchors          47 PDFs, 7,423 anchored, 23 file-level fallback
+[2/3] Resolving PDF anchors          47 PDFs anchored at page level: 7,423
+                                            low-confidence fallback:    18
+                                            pdf-read-failed fallback:    3
+                                            pdf-not-found  fallback:     2
 [2/3] Embedding (batch 29/29)        ████████████████████ 7,758/7,758  18.3s
 [3/3] Committing transaction         done
 
@@ -1030,7 +1033,7 @@ rex_requests_total{route, status, method}              counter
 rex_request_duration_ms{route}                          histogram
 
 # Search-stage
-rex_search_stage_duration_ms{stage}                     histogram   # stage = embed|bm25|vector|fuse|rerank|hydrate
+rex_search_stage_duration_ms{stage}                     histogram   # stage = embed|bm25|vector|fuse|rerank|hydrate_for_rerank|hydrate_for_response
 rex_search_hits{mode}                                   histogram
 
 # Ingest
