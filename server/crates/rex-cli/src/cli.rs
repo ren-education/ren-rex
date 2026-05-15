@@ -36,9 +36,11 @@ pub enum Cmd {
     ///
     /// Use this BEFORE `rex ingest` to catch shape mismatches between the
     /// input files and the rex JsonlRow schema. Validation reuses the exact
-    /// same serde parser as ingest (including `#[serde(deny_unknown_fields)]`
-    /// on both `JsonlRow` and `JsonlTags`), so "passes validate" guarantees
-    /// "will not be skipped by ingest". Typically sub-second on a 10k-row file.
+    /// same serde parser as ingest, so "passes validate" guarantees "will not
+    /// be skipped by ingest". Unknown fields are silently accepted (matching
+    /// ingest); the validator only surfaces structural problems — missing
+    /// required fields, wrong types, malformed UUIDs, duplicate keys, etc.
+    /// Typically sub-second on a 10k-row file.
     ///
     /// TWO INPUT MODES:
     ///   * --file <path> --kind <question|note>

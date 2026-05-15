@@ -247,10 +247,13 @@ mod tests {
     }
 
     #[test]
-    fn deny_unknown_fields_rejects_new_keys() {
-        let with_unknown = r#"{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{}, "newfield":"foo"}"#;
-        let err = JsonlRow::parse(with_unknown).unwrap_err();
-        assert!(err.to_string().to_lowercase().contains("newfield"));
+    fn unknown_fields_are_silently_skipped() {
+        // Drift policy: rob can add new top-level or tag fields without
+        // breaking ingest. The row still parses; the new field is just
+        // dropped. `rex validate` is the surface for noticing drift.
+        let with_unknown = r#"{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{"brand_new":["x"]},"newfield":"foo"}"#;
+        let row = JsonlRow::parse(with_unknown).expect("unknown fields should be accepted");
+        assert_eq!(row.id, "d95d6cc3-5f4e-41ed-9741-a14bad3b6320");
     }
 
     #[test]

@@ -298,13 +298,13 @@ mod tests {
         let dir = std::env::temp_dir();
         let path = dir.join("rex-validate-test-buckets.jsonl");
         let mut f = std::fs::File::create(&path).unwrap();
-        // Two rows broken in the same way (a clearly-fictional tag field
-        // that JsonlTags will reject via deny_unknown_fields); one clean
-        // row. Field name is intentionally absurd so future expansions of
-        // JsonlTags don't quietly "fix" this test the way `common_mistakes`
-        // did once we added it as a known field.
-        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{{"rex_test_only_zzz":["a"]}}}}"#).unwrap();
-        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6321","source":"y.md","tags":{{"rex_test_only_zzz":["b"]}}}}"#).unwrap();
+        // Two rows broken in the same way (`id` is required but missing);
+        // one clean row. "missing field" errors have a constant signature
+        // across rows (no payload values inlined), so they're the cleanest
+        // illustration of bucketing. Type-mismatch errors bucket less
+        // perfectly because serde inlines the bad value into the message.
+        writeln!(f, r#"{{"source":"x.md","tags":{{}}}}"#).unwrap();
+        writeln!(f, r#"{{"source":"y.md","tags":{{}}}}"#).unwrap();
         writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6322","source":"z.md","tags":{{}}}}"#).unwrap();
         let r = validate_file(&path, DocumentKind::Note, &SubjectId::new("test")).unwrap();
         assert_eq!(r.total_rows, 3);
@@ -316,15 +316,19 @@ mod tests {
     }
 
     #[test]
-    fn validate_file_buckets_unknown_tag_field() {
+    fn validate_file_accepts_unknown_top_level_and_tag_fields() {
+        // Policy: unknown fields are silently dropped. `rex validate` should
+        // report 0 failures even when rob adds a field rex doesn't model.
+        // This is the assertion that catches a future maintainer accidentally
+        // re-introducing `#[serde(deny_unknown_fields)]`.
         use std::io::Write;
         let dir = std::env::temp_dir();
-        let path = dir.join("rex-validate-test-tags.jsonl");
+        let path = dir.join("rex-validate-test-drift.jsonl");
         let mut f = std::fs::File::create(&path).unwrap();
-        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{{"rex_test_only_zzz":["a"]}}}}"#).unwrap();
+        writeln!(f, r#"{{"id":"d95d6cc3-5f4e-41ed-9741-a14bad3b6320","source":"x.md","tags":{{"brand_new_facet":["x"]}},"future_field":"y"}}"#).unwrap();
         let r = validate_file(&path, DocumentKind::Note, &SubjectId::new("test")).unwrap();
-        assert_eq!(r.failed_rows, 1);
-        assert!(r.buckets[0].signature.contains("unknown field"));
+        assert_eq!(r.ok_rows, 1);
+        assert_eq!(r.failed_rows, 0);
         let _ = std::fs::remove_file(&path);
     }
 
