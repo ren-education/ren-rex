@@ -27,28 +27,26 @@ export default async function Home() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-10 px-6 py-14">
       <header className="flex items-baseline justify-between border-b border-border pb-6">
-        <div className="flex items-baseline gap-2.5">
+        <div className="flex items-baseline gap-2">
           {/* rex wordmark — sage italic e in serif */}
           <span className="font-heading text-3xl tracking-tight">
             r<span className="text-primary italic">e</span>x
           </span>
-          {/* "by" connector */}
-          <span className="text-sm italic text-muted-foreground">by</span>
-          {/* ren wordmark — typeset to match the ren brand identity
-              (lowercase, very heavy sans, trailing period). The ren-landing
-              asset is a square standalone mark with bake-in padding that
-              doesn't sit cleanly inline with text, so we approximate the
-              treatment with Geist Black at the same optical weight. */}
-          <a
-            href="https://ren.education"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="ren"
-            className="font-sans text-3xl font-black tracking-tight text-foreground transition-opacity hover:opacity-80"
-            style={{ fontFeatureSettings: '"ss01"' }}
-          >
-            ren.
-          </a>
+          {/* "by ren." attribution — small enough to read as a subscript-
+              style credit rather than co-equal billing. The "ren." keeps
+              its brand weight (black sans + period) so it still nods to
+              the ren wordmark identity, just at attribution scale. */}
+          <span className="text-[0.7rem] text-muted-foreground">
+            by{" "}
+            <a
+              href="https://ren.education"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-sans font-black tracking-tight text-foreground transition-opacity hover:opacity-70"
+            >
+              ren.
+            </a>
+          </span>
         </div>
         <div className="text-xs text-muted-foreground">
           <span className="text-foreground/80 font-medium">
