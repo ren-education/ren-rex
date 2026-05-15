@@ -47,20 +47,26 @@ html, body {
   }
 
   /* In-PDF term highlight (pdf-viewer customTextRenderer wraps matches
-     in <mark class="rex-mark">). pdfjs's textLayer renders text in
-     `color: transparent` so only the canvas glyphs underneath show
-     through. We MUST NOT override color here — doing so makes the
-     textLayer text visible on top of the canvas, doubling each glyph.
-     We only paint a background tint; the visible characters keep coming
-     from the canvas underneath. mix-blend-mode keeps the underlying
-     glyphs legible through the tint. */
+     in <mark class="rex-mark">). Two constraints, both from how pdfjs
+     stacks layers:
+       1. pdfjs's textLayer has `color: transparent` so the visible
+          glyphs come from the canvas underneath. We must NOT override
+          `color` — doing so renders the textLayer text on top of the
+          canvas glyphs, doubling each character.
+       2. Our background paints on the textLayer span, which is an
+          absolutely-positioned overlay above the canvas. A fully opaque
+          background would mask the canvas glyphs entirely, hiding the
+          text we wanted to highlight. So we use a translucent background
+          (via color-mix) — the canvas glyphs show through, the sage
+          tint reads as a highlighter pen.
+     Padding/margin stay zero because pdfjs sizes each span to fit
+     specific glyph runs; any added box dimension shifts the alignment. */
   mark.rex-mark {
-    background: var(--accent);
+    background-color: color-mix(in oklab, var(--accent) 60%, transparent);
     color: inherit;
     padding: 0;
     margin: 0;
     border-radius: 1px;
-    mix-blend-mode: multiply;
   }
 
   /* Per-hit metadata strip: tiny uppercase smallcaps in muted color. */
