@@ -23,6 +23,11 @@ pub struct JsonlRow {
     #[serde(default)]
     pub number: Option<String>,
     pub source: String,
+    /// Some subjects (h2history) carry a top-level `source_type` field in
+    /// addition to `tags.source_types`. We accept and ignore it; the canonical
+    /// taxonomy lives under tags.source_types.
+    #[serde(default)]
+    pub source_type: Option<String>,
     #[serde(default)]
     pub context: Option<String>,
     #[serde(default)]
@@ -42,6 +47,15 @@ pub struct JsonlRow {
     pub answer_images: Vec<serde_json::Value>,
     #[serde(default)]
     pub notes: Option<String>,
+    /// Notes carry their body in `content` (not `question`/`answer`).
+    #[serde(default)]
+    pub content: Option<String>,
+    /// Notes have a `type` field (e.g., "wiki", "knowledge"). Accepted, unused.
+    #[serde(default, rename = "type")]
+    pub note_type: Option<String>,
+    /// Notes reference related question ids instead of `parent_id`/`depends_on`.
+    #[serde(default)]
+    pub related_question_ids: Vec<String>,
     #[serde(default)]
     pub tags: JsonlTags,
 }
@@ -85,6 +99,15 @@ impl JsonlRow {
             .filter_map(|s| Uuid::parse_str(s).ok().map(DocumentId))
             .collect();
 
+        // For notes, the body lives in `content`. Map it into the `question`
+        // field for indexing (the search_text builder includes question text
+        // with a "Question:" prefix; we accept that prefix on notes too — it's
+        // a soft signal that doesn't hurt retrieval).
+        let (question_field, notes_field) = match kind {
+            DocumentKind::Question => (self.question, self.notes),
+            DocumentKind::Note => (self.content.or(self.question), self.notes),
+        };
+
         Ok(Document {
             id,
             subject,
@@ -94,9 +117,9 @@ impl JsonlRow {
             number: self.number,
             source: SourcePath::new(PathBuf::from(self.source)),
             context: self.context,
-            question: self.question,
+            question: question_field,
             answer: self.answer,
-            notes: self.notes,
+            notes: notes_field,
             mark: self.mark,
             options: self.options,
             keywords: self.keywords,
