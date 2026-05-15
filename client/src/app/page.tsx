@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { SearchPanel } from "@/components/search-panel";
 import { listSubjects } from "@/lib/rex";
 import type { SubjectStats } from "@/lib/types";
@@ -27,8 +28,31 @@ export default async function Home() {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-10 px-6 py-14">
       <header className="flex items-baseline justify-between border-b border-border pb-6">
-        <div className="font-heading text-3xl tracking-tight">
-          r<span className="text-primary italic">e</span>x
+        <div className="flex items-baseline gap-2.5">
+          {/* rex wordmark — sage italic e in serif */}
+          <span className="font-heading text-3xl tracking-tight">
+            r<span className="text-primary italic">e</span>x
+          </span>
+          {/* "by" connector */}
+          <span className="text-sm italic text-muted-foreground">by</span>
+          {/* ren brand mark — actual wordmark from ren-landing so it stays
+              brand-identical. dark:invert flips black → white in dark mode. */}
+          <a
+            href="https://ren.education"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="ren"
+            className="inline-flex items-baseline opacity-90 transition-opacity hover:opacity-100"
+          >
+            <Image
+              src="/ren.png"
+              alt="ren"
+              width={68}
+              height={26}
+              priority
+              className="h-[1.1rem] w-auto translate-y-px dark:invert"
+            />
+          </a>
         </div>
         <div className="text-xs text-muted-foreground">
           <span className="text-foreground/80 font-medium">
