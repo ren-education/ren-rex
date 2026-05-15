@@ -164,10 +164,8 @@ function FacetDropdown({ field, values, selected, onToggle }: FacetDropdownProps
           <DropdownMenuCheckboxItem
             key={v.value}
             checked={selected.includes(v.value)}
-            onSelect={(e) => {
-              e.preventDefault();
-              onToggle(v.value);
-            }}
+            onCheckedChange={() => onToggle(v.value)}
+            closeOnClick={false}
             className="text-xs"
           >
             <span className="flex-1 truncate">{prettyValue(v.value)}</span>
