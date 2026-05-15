@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { SearchPanel } from "@/components/search-panel";
 import { listSubjects } from "@/lib/rex";
 import type { SubjectStats } from "@/lib/types";
@@ -35,23 +34,20 @@ export default async function Home() {
           </span>
           {/* "by" connector */}
           <span className="text-sm italic text-muted-foreground">by</span>
-          {/* ren brand mark — actual wordmark from ren-landing so it stays
-              brand-identical. dark:invert flips black → white in dark mode. */}
+          {/* ren wordmark — typeset to match the ren brand identity
+              (lowercase, very heavy sans, trailing period). The ren-landing
+              asset is a square standalone mark with bake-in padding that
+              doesn't sit cleanly inline with text, so we approximate the
+              treatment with Geist Black at the same optical weight. */}
           <a
             href="https://ren.education"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="ren"
-            className="inline-flex items-baseline opacity-90 transition-opacity hover:opacity-100"
+            className="font-sans text-3xl font-black tracking-tight text-foreground transition-opacity hover:opacity-80"
+            style={{ fontFeatureSettings: '"ss01"' }}
           >
-            <Image
-              src="/ren.png"
-              alt="ren"
-              width={68}
-              height={26}
-              priority
-              className="h-[1.1rem] w-auto translate-y-px dark:invert"
-            />
+            ren.
           </a>
         </div>
         <div className="text-xs text-muted-foreground">
