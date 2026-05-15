@@ -1,23 +1,39 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { ChevronLeft, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  highlightInText,
+  locateBestPage,
+  tokenizeQuery,
+} from "@/lib/pdf-match";
 import type { SearchHit } from "@/lib/types";
 
-// Use jsdelivr CDN for the worker so we don't need a custom Next asset rule.
-// react-pdf ≥ 9 ships pdfjs ≥ 4 and expects the .mjs worker.
+// Worker from jsdelivr. The version matches react-pdf's bundled pdfjs-dist
+// (currently 4.x via react-pdf 9). Pinning the URL to `pdfjs.version`
+// avoids version drift when react-pdf updates.
 pdfjs.GlobalWorkerOptions.workerSrc =
   `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface Props {
   hit: SearchHit;
+  /** The current user query; terms get highlighted on the rendered page. */
+  query: string;
 }
 
-export function PdfViewer({ hit }: Props) {
+type LocateSource = "server" | "client" | "fallback";
+
+interface LocateInfo {
+  page: number;
+  score: number;
+  source: LocateSource;
+}
+
+export function PdfViewer({ hit, query }: Props) {
   const docUrl = `/v1/documents/${hit.document.id}/pdf`;
   const hintedPage = hit.document.pdf_anchor?.page_number ?? null;
 
@@ -25,18 +41,27 @@ export function PdfViewer({ hit }: Props) {
   const [page, setPage] = useState<number>(hintedPage ?? 1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [locate, setLocate] = useState<LocateInfo | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(600);
 
-  // Reset state when the hit (document) changes.
+  // Track which hit is currently active so async page-locate can bail out
+  // if the user clicks another hit mid-scan.
+  const activeHitIdRef = useRef(hit.document.id);
+  useEffect(() => {
+    activeHitIdRef.current = hit.document.id;
+  });
+
+  // Reset state when the hit changes.
   useEffect(() => {
     setPage(hintedPage ?? 1);
     setNumPages(0);
     setLoading(true);
     setError(null);
+    setLocate(null);
   }, [hit.document.id, hintedPage]);
 
-  // Track the available width so the page can be scaled to fit.
+  // Track the available width so the page scales to fit.
   useEffect(() => {
     if (!containerRef.current) return;
     const ro = new ResizeObserver(([entry]) => {
@@ -45,6 +70,73 @@ export function PdfViewer({ hit }: Props) {
     ro.observe(containerRef.current);
     return () => ro.disconnect();
   }, []);
+
+  // Build the target the page-locator will match against.
+  const target = useMemo(() => {
+    return [hit.document.context, hit.document.question, hit.document.notes]
+      .filter(Boolean)
+      .join(" ");
+  }, [hit.document.context, hit.document.question, hit.document.notes]);
+
+  // Tokenize the user query for in-page highlighting.
+  const queryTerms = useMemo(() => tokenizeQuery(query), [query]);
+
+  // Wrap each text item with <mark> tags on matched terms. pdfjs's
+  // TextLayer renders the returned string as HTML in place of the raw
+  // text item.
+  const customTextRenderer = useCallback(
+    (item: { str: string }) => highlightInText(item.str, queryTerms),
+    [queryTerms],
+  );
+
+  const onLoadSuccess = useCallback(
+    // react-pdf's onLoadSuccess gives us the underlying pdfjs PDFDocumentProxy.
+    // We type it via the param shape we actually use to avoid a pdfjs-dist
+    // direct import (which is a sibling dep, not a public re-export).
+    async (pdf: Parameters<NonNullable<React.ComponentProps<typeof Document>["onLoadSuccess"]>>[0]) => {
+      setNumPages(pdf.numPages);
+      setLoading(false);
+
+      const startingHit = activeHitIdRef.current;
+      // Clamp hinted page first.
+      if (hintedPage && hintedPage > pdf.numPages) {
+        setPage(1);
+      }
+
+      if (!target.trim()) {
+        if (hintedPage) {
+          setLocate({
+            page: hintedPage,
+            score: hit.document.pdf_anchor?.confidence ?? 1,
+            source: "server",
+          });
+        }
+        return;
+      }
+
+      // Run client-side fuzzy match. pdfjs's text extraction is usually
+      // cleaner than the server's pdf-extract, so this often finds the
+      // right page even when the server set `page_number: null`.
+      const located = await locateBestPage(pdf, target).catch(() => null);
+      // Bail if the user clicked another hit while we were scanning.
+      if (activeHitIdRef.current !== startingHit) return;
+
+      if (located) {
+        setPage(located.page);
+        setLocate({ ...located, source: "client" });
+      } else if (hintedPage) {
+        setPage(hintedPage);
+        setLocate({
+          page: hintedPage,
+          score: hit.document.pdf_anchor?.confidence ?? 0,
+          source: "server",
+        });
+      } else {
+        setLocate({ page: 1, score: 0, source: "fallback" });
+      }
+    },
+    [hintedPage, target, hit.document.pdf_anchor?.confidence],
+  );
 
   const filename =
     hit.document.pdf_anchor?.pdf_path.split("/").pop() ?? "document.pdf";
@@ -56,7 +148,7 @@ export function PdfViewer({ hit }: Props) {
         <span className="font-heading truncate text-foreground text-sm">
           {filename}
         </span>
-        {hit.document.pdf_anchor?.fallback_reason && (
+        {hit.document.pdf_anchor?.fallback_reason && locate?.source !== "client" && (
           <span className="text-destructive/70 italic">
             ({hit.document.pdf_anchor.fallback_reason})
           </span>
@@ -112,14 +204,7 @@ export function PdfViewer({ hit }: Props) {
 
         <Document
           file={docUrl}
-          onLoadSuccess={({ numPages }) => {
-            setNumPages(numPages);
-            setLoading(false);
-            // Clamp the hinted page if it overshoots the doc.
-            if (hintedPage && hintedPage > numPages) {
-              setPage(1);
-            }
-          }}
+          onLoadSuccess={onLoadSuccess}
           onLoadError={(err) => {
             setLoading(false);
             setError(err?.message ?? "Failed to load PDF");
@@ -133,16 +218,36 @@ export function PdfViewer({ hit }: Props) {
               width={Math.max(320, containerWidth - 32)}
               renderTextLayer
               renderAnnotationLayer={false}
+              customTextRenderer={customTextRenderer}
               className="mx-auto"
             />
           )}
         </Document>
       </div>
 
-      {hintedPage && (
+      {/* Locate provenance footer — tells the user where the page came from */}
+      {locate && (
         <p className="smallcaps">
-          Question anchored to page <span className="num text-foreground">{hintedPage}</span>
-          {numPages ? <> of <span className="num">{numPages}</span></> : null}
+          {locate.source === "client" && (
+            <>
+              Auto-located to page <span className="num text-foreground">{locate.page}</span>{" "}
+              {numPages ? <>of <span className="num">{numPages}</span>{" "}</> : null}
+              · client match <span className="num">{locate.score.toFixed(2)}</span>
+            </>
+          )}
+          {locate.source === "server" && (
+            <>
+              Server-anchored to page <span className="num text-foreground">{locate.page}</span>
+              {numPages ? <> of <span className="num">{numPages}</span></> : null}
+            </>
+          )}
+          {locate.source === "fallback" && (
+            <>
+              Showing page <span className="num text-foreground">1</span>
+              {numPages ? <> of <span className="num">{numPages}</span></> : null}
+              {" "}· no page anchor found
+            </>
+          )}
         </p>
       )}
     </div>

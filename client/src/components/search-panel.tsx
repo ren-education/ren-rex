@@ -228,7 +228,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
         </ul>
 
         <div className="lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
-          <PdfViewerLoader hit={selectedHit} />
+          <PdfViewerLoader hit={selectedHit} query={query} />
         </div>
       </div>
     </section>

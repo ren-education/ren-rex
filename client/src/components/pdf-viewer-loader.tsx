@@ -20,9 +20,11 @@ const PdfViewer = dynamic(
 
 interface Props {
   hit: SearchHit | null;
+  /** The current user query — terms are highlighted on the rendered page. */
+  query: string;
 }
 
-export function PdfViewerLoader({ hit }: Props) {
+export function PdfViewerLoader({ hit, query }: Props) {
   if (!hit) {
     return (
       <div className="flex h-full min-h-0 flex-col items-center justify-center gap-1 text-center text-sm text-muted-foreground">
@@ -45,5 +47,5 @@ export function PdfViewerLoader({ hit }: Props) {
     );
   }
 
-  return <PdfViewer hit={hit} />;
+  return <PdfViewer hit={hit} query={query} />;
 }

@@ -46,6 +46,17 @@ html, body {
     border-radius: 2px;
   }
 
+  /* In-PDF term highlight (pdf-viewer customTextRenderer wraps matches
+     in <mark class="rex-mark">). pdfjs renders the textLayer positioned
+     absolutely over the canvas, so we keep padding to zero — any horizontal
+     padding would shift the highlight off the underlying glyphs. */
+  mark.rex-mark {
+    background: var(--accent);
+    color: var(--accent-foreground);
+    padding: 0;
+    border-radius: 1px;
+  }
+
   /* Per-hit metadata strip: tiny uppercase smallcaps in muted color. */
   .smallcaps {
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
