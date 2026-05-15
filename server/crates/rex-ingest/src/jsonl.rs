@@ -36,8 +36,14 @@ pub struct JsonlRow {
     pub mark: Option<u32>,
     #[serde(default)]
     pub keywords: Vec<String>,
+    /// MCQ options. Multiple corpus shapes seen in the wild:
+    ///   h2history/gp: omitted (essays)
+    ///   h2physics MCQ: `[{"label": "A", "text": "..."}, ...]`
+    ///   future:       could also be `["...", "...", ...]`
+    /// Accept all three by parsing into serde_json::Value and flattening
+    /// in `into_document` below.
     #[serde(default)]
-    pub options: Option<Vec<String>>,
+    pub options: Option<Vec<serde_json::Value>>,
     /// Always-present, often-empty; we ignore the contents in v1.
     #[serde(default)]
     pub images: Vec<serde_json::Value>,
@@ -121,7 +127,9 @@ impl JsonlRow {
             answer: self.answer,
             notes: notes_field,
             mark: self.mark,
-            options: self.options,
+            options: self.options.map(|opts| {
+                opts.into_iter().map(flatten_option_value).collect()
+            }),
             keywords: self.keywords,
             tags: Tags {
                 topics: self.tags.topics.into_iter().map(TagValue::new).collect(),
@@ -146,11 +154,39 @@ impl JsonlRow {
     }
 }
 
+/// Flatten one MCQ option value into a display string. We accept three shapes:
+///   - plain string  `"some text"`             →  `"some text"`
+///   - labelled obj  `{"label":"A","text":"..."}` → `"A. ..."`
+///   - other obj     `{"value": "..."}`            → `"..."`
+/// Unrecognized shapes fall back to the JSON serialization so no information
+/// is silently lost in the index.
+fn flatten_option_value(v: serde_json::Value) -> String {
+    use serde_json::Value;
+    match v {
+        Value::String(s) => s,
+        Value::Object(map) => {
+            let label = map.get("label").and_then(|x| x.as_str());
+            let text = map
+                .get("text")
+                .and_then(|x| x.as_str())
+                .or_else(|| map.get("value").and_then(|x| x.as_str()));
+            match (label, text) {
+                (Some(l), Some(t)) => format!("{l}. {t}"),
+                (None, Some(t)) => t.to_string(),
+                _ => Value::Object(map).to_string(),
+            }
+        }
+        other => other.to_string(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     const H2PHYSICS_SAMPLE: &str = r#"{"id": "d95d6cc3-5f4e-41ed-9741-a14bad3b6320", "parent_id": null, "depends_on": [], "number": "1", "source": "content/prelims/2019/HCI/X.md", "context": "A large metal ball...", "question": null, "mark": 9, "keywords": ["circular motion"], "options": null, "images": [], "answer": null, "answer_images": [], "notes": null, "tags": {"topics": ["dynamics"], "question_types": ["structured"], "exam_systems": ["a-level"], "paper_types": ["paper-2"], "schools": ["hwa-chong-institution"], "source_types": ["prelims"]}}"#;
+
+    const H2PHYSICS_MCQ_SAMPLE: &str = r#"{"id":"a0000000-0000-0000-0000-000000000001","source":"content/x.md","options":[{"label":"A","text":"first"},{"label":"B","text":"second"}],"tags":{}}"#;
 
     #[test]
     fn parse_h2physics_row() {
@@ -158,6 +194,28 @@ mod tests {
         assert_eq!(row.id, "d95d6cc3-5f4e-41ed-9741-a14bad3b6320");
         assert_eq!(row.mark, Some(9));
         assert_eq!(row.tags.topics, vec!["dynamics"]);
+    }
+
+    #[test]
+    fn parse_h2physics_mcq_options_as_labelled_objects() {
+        let row = JsonlRow::parse(H2PHYSICS_MCQ_SAMPLE).unwrap();
+        let doc = row
+            .into_document(SubjectId::new("h2physics"), DocumentKind::Question)
+            .unwrap();
+        let opts = doc.options.expect("options present");
+        assert_eq!(opts, vec!["A. first".to_string(), "B. second".to_string()]);
+    }
+
+    #[test]
+    fn flatten_option_value_handles_all_shapes() {
+        use serde_json::json;
+        assert_eq!(flatten_option_value(json!("hello")), "hello");
+        assert_eq!(
+            flatten_option_value(json!({"label": "A", "text": "x"})),
+            "A. x"
+        );
+        assert_eq!(flatten_option_value(json!({"text": "x"})), "x");
+        assert_eq!(flatten_option_value(json!({"value": "x"})), "x");
     }
 
     #[test]
