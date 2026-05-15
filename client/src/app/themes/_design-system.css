@@ -47,14 +47,20 @@ html, body {
   }
 
   /* In-PDF term highlight (pdf-viewer customTextRenderer wraps matches
-     in <mark class="rex-mark">). pdfjs renders the textLayer positioned
-     absolutely over the canvas, so we keep padding to zero — any horizontal
-     padding would shift the highlight off the underlying glyphs. */
+     in <mark class="rex-mark">). pdfjs's textLayer renders text in
+     `color: transparent` so only the canvas glyphs underneath show
+     through. We MUST NOT override color here — doing so makes the
+     textLayer text visible on top of the canvas, doubling each glyph.
+     We only paint a background tint; the visible characters keep coming
+     from the canvas underneath. mix-blend-mode keeps the underlying
+     glyphs legible through the tint. */
   mark.rex-mark {
     background: var(--accent);
-    color: var(--accent-foreground);
+    color: inherit;
     padding: 0;
+    margin: 0;
     border-radius: 1px;
+    mix-blend-mode: multiply;
   }
 
   /* Per-hit metadata strip: tiny uppercase smallcaps in muted color. */

@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { Search, FileText, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { Tip } from "@/components/tip";
 import { PdfViewerLoader } from "@/components/pdf-viewer-loader";
 import type { SearchHit, SearchMeta, SearchMode, SubjectStats } from "@/lib/types";
 
@@ -22,10 +22,22 @@ interface Props {
   apiOnline: boolean;
 }
 
-const MODE_OPTIONS: { value: SearchMode; label: string }[] = [
-  { value: "Hybrid",     label: "Hybrid"   },
-  { value: "Bm25Only",   label: "Keyword"  },
-  { value: "VectorOnly", label: "Semantic" },
+const MODE_OPTIONS: { value: SearchMode; label: string; tip: string }[] = [
+  {
+    value: "Hybrid",
+    label: "Hybrid",
+    tip: "Best results. BM25 + semantic vector + cross-encoder rerank fused together.",
+  },
+  {
+    value: "Bm25Only",
+    label: "Keyword",
+    tip: "Pure keyword search (FTS5/BM25). Fast and exact — use when you know the term.",
+  },
+  {
+    value: "VectorOnly",
+    label: "Semantic",
+    tip: "Vector similarity only. Finds conceptual matches even when keywords don't overlap.",
+  },
 ];
 
 const DEMO_HITS: SearchHit[] = [
@@ -148,9 +160,9 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
           <Tabs value={mode} onValueChange={(v) => setMode(v as SearchMode)}>
             <TabsList>
               {MODE_OPTIONS.map((m) => (
-                <TabsTrigger key={m.value} value={m.value}>
-                  {m.label}
-                </TabsTrigger>
+                <Tip key={m.value} label={m.tip} side="bottom">
+                  <TabsTrigger value={m.value}>{m.label}</TabsTrigger>
+                </Tip>
               ))}
             </TabsList>
           </Tabs>
@@ -183,18 +195,16 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
       )}
 
       {/* ─── Meta strip ─────────────────────────────────────────── */}
+      {/* `mode` already encodes which stages ran (Hybrid → all three;
+          Bm25Only → only bm25; etc.) so we don't surface separate
+          per-stage badges here. */}
       {meta && (
         <div className="smallcaps flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span>
-            <span className="text-foreground">
-              <span className="num">{hits.length}</span> matches
-            </span>
+          <span className="text-foreground">
+            <span className="num">{hits.length}</span> matches
           </span>
           <span><span className="num">{meta.took_ms}</span>&nbsp;ms</span>
           <span>mode <span className="text-foreground">{meta.mode}</span></span>
-          {meta.used_bm25     && <Badge variant="outline">bm25</Badge>}
-          {meta.used_vector   && <Badge variant="outline">vector</Badge>}
-          {meta.used_reranker && <Badge variant="outline">rerank</Badge>}
           {meta.fts5_query && (
             <span className="num text-muted-foreground/70 truncate max-w-[40ch]">
               fts5 → {meta.fts5_query}
