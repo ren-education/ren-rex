@@ -1,4 +1,5 @@
 import { SearchPanel } from "@/components/search-panel";
+import { RubricCtaChip } from "@/components/rubric-cta-chip";
 import { listSubjects } from "@/lib/rex";
 import type { SubjectStats } from "@/lib/types";
 
@@ -47,6 +48,7 @@ export default async function Home() {
               ren.
             </a>
           </span>
+          <RubricCtaChip />
         </div>
         <div className="text-xs text-muted-foreground">
           <span className="text-foreground/80 font-medium">
