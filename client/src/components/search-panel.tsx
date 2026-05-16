@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import { Search, FileText, Sparkles, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Search, FileText, Sparkles, Loader2, BarChart3, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { hasAnalytics } from "@/lib/analytics";
 import {
   Select,
   SelectContent,
@@ -260,7 +262,11 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
 
         <div className="flex flex-wrap items-center gap-3">
           <Select value={subject} onValueChange={(v) => setSubject(v ?? "")}>
-            <SelectTrigger className="w-fit min-w-44">
+            {/* min-w-56 leaves room for the widest item ("H1 General Paper")
+                plus the count plus the 32px indicator reserve (pr-8 on the
+                SelectItem). The dropdown inherits its width from the trigger
+                (base-ui: w-(--anchor-width)), so widening here widens both. */}
+            <SelectTrigger className="w-fit min-w-56">
               {/* base-ui's SelectValue shows the raw value string by default,
                   so even though SelectItem renders formatSubject(id), the
                   trigger would still say "gp". Pass a render fn so the
@@ -277,9 +283,12 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
               <SelectItem value="__all__">All subjects</SelectItem>
               {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                  {formatSubject(s.id)}{" "}
-                  <span className="num text-muted-foreground ml-1">
-                    ({s.item_count.toLocaleString()})
+                  <span>{formatSubject(s.id)}</span>
+                  {/* ml-auto right-aligns the count inside the ItemText
+                      flex row so labels and counts line up in a column —
+                      and so the count never crashes into the check. */}
+                  <span className="num text-muted-foreground ml-auto">
+                    {s.item_count.toLocaleString()}
                   </span>
                 </SelectItem>
               ))}
@@ -295,6 +304,42 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
               ))}
             </TabsList>
           </Tabs>
+
+          {/* Contextual analytics link. Lives AFTER the mode tabs because
+            * it's adjacent in purpose ("what's in this corpus?" sits next
+            * to "how should I search it?") but logically distinct from the
+            * search controls — so it gets text-link styling rather than
+            * the bordered button chrome the other controls use. The href
+            * derives from the current `subject` state at render time. */}
+          <Tip
+            label={
+              hasAnalytics(normalizedSubject)
+                ? `Coverage and topic breakdown for ${formatSubject(normalizedSubject)}`
+                : "Browse aggregated stats for all subjects"
+            }
+            side="bottom"
+          >
+            <Link
+              href={
+                hasAnalytics(normalizedSubject)
+                  ? `/analytics/${normalizedSubject}`
+                  : "/analytics"
+              }
+              className={cn(
+                "inline-flex items-center gap-1.5 text-sm text-muted-foreground",
+                "transition-colors hover:text-foreground",
+                "[&_svg]:transition-transform [&:hover_.arrow]:translate-x-0.5 [&:hover_.arrow]:-translate-y-0.5",
+              )}
+            >
+              <BarChart3 className="size-3.5" aria-hidden />
+              <span>
+                {hasAnalytics(normalizedSubject)
+                  ? `${formatSubject(normalizedSubject)} analytics`
+                  : "Analytics"}
+              </span>
+              <ArrowUpRight className="arrow size-3" aria-hidden />
+            </Link>
+          </Tip>
 
           <Button
             type="submit"

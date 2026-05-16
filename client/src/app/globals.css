@@ -16,6 +16,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Typography plugin — enables `prose` utility classes for rendered
+ * markdown (analytics narratives). Theme overrides live in the analytics
+ * page itself so they can co-vary with the active rex theme. */
+@plugin "@tailwindcss/typography";
+
 @import "./themes/_design-system.css";
 @import "./themes/sage-linen.css";
 @import "./themes/warm-paper.css";   /* registered for demo; activate via data-theme */

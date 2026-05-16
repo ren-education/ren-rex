@@ -1,0 +1,727 @@
+{
+  "total_documents": 1857,
+  "questions": 1342,
+  "notes": 515,
+  "with_answer": 35,
+  "with_mark": 1293,
+  "year_parseable": 1769,
+  "year_range": [
+    2000,
+    2025
+  ],
+  "questions_per_year": {
+    "2000": 7,
+    "2008": 119,
+    "2009": 103,
+    "2011": 158,
+    "2012": 78,
+    "2013": 116,
+    "2015": 150,
+    "2016": 146,
+    "2017": 175,
+    "2018": 191,
+    "2019": 77,
+    "2020": 60,
+    "2021": 53,
+    "2023": 106,
+    "2024": 63,
+    "2025": 167
+  },
+  "tag_field_counts": {
+    "exam_systems": 3,
+    "paper_types": 2,
+    "question_types": 67,
+    "schools": 24,
+    "source_types": 10,
+    "topics": 1429
+  },
+  "top_topics": {
+    "southeast-asia": 478,
+    "cold-war": 366,
+    "asean": 274,
+    "source-analysis": 231,
+    "forming-nation-states": 177,
+    "united-nations": 168,
+    "economic-development": 159,
+    "regional-conflicts": 155,
+    "global-economy": 136,
+    "peacekeeping": 120,
+    "regional-cooperation": 90,
+    "superpowers": 81,
+    "arab-israeli-conflict": 80,
+    "korean-war": 79,
+    "political-structures": 79,
+    "cold-war-end": 76,
+    "gorbachev": 74,
+    "national-unity": 70,
+    "provenance": 65,
+    "decolonisation": 64
+  },
+  "top_schools": {
+    "hwa-chong-institution": 166,
+    "st-andrews-junior-college": 166,
+    "raffles-institution": 113,
+    "nanyang-junior-college": 103,
+    "pioneer-junior-college": 92,
+    "catholic-junior-college": 87,
+    "meridian-junior-college": 81,
+    "river-valley-high-school": 77,
+    "anglo-chinese-junior-college": 71,
+    "dunman-high-school": 70,
+    "national-junior-college": 68,
+    "temasek-junior-college": 67,
+    "millennia-institute": 65,
+    "yishun-junior-college": 63,
+    "innova-junior-college": 58
+  },
+  "question_types": {
+    "essay": 784,
+    "evaluation": 772,
+    "causation": 271,
+    "source-based-case-study": 151,
+    "source-based": 144,
+    "sbcs": 143,
+    "test-assertion": 129,
+    "sbcs-part-b": 122,
+    "discussion": 88,
+    "comparison": 81,
+    "sbcs-part-a": 66,
+    "compare-sources": 58,
+    "essay-how-far": 46,
+    "how-far": 37,
+    "sbq-compare-contrast": 31,
+    "assessment": 26,
+    "essay-evaluation": 21,
+    "sbq-evaluate-hypothesis": 21,
+    "essay-extent": 21,
+    "essay-assess": 20
+  },
+  "paper_types": {
+    "paper-1": 1036,
+    "paper-2": 821
+  },
+  "topic_by_year": {
+    "asean": {
+      "2008": 23,
+      "2009": 8,
+      "2011": 23,
+      "2012": 5,
+      "2013": 22,
+      "2015": 23,
+      "2016": 23,
+      "2017": 33,
+      "2018": 42,
+      "2019": 6,
+      "2020": 12,
+      "2021": 2,
+      "2023": 13,
+      "2025": 38
+    },
+    "cold-war": {
+      "2000": 3,
+      "2008": 17,
+      "2009": 13,
+      "2011": 34,
+      "2012": 17,
+      "2013": 22,
+      "2015": 27,
+      "2016": 15,
+      "2017": 37,
+      "2018": 37,
+      "2019": 17,
+      "2020": 13,
+      "2021": 14,
+      "2023": 24,
+      "2024": 5,
+      "2025": 20
+    },
+    "economic-development": {
+      "2008": 10,
+      "2009": 8,
+      "2011": 16,
+      "2012": 7,
+      "2013": 3,
+      "2015": 9,
+      "2016": 9,
+      "2017": 27,
+      "2018": 24,
+      "2019": 8,
+      "2020": 8,
+      "2021": 5,
+      "2023": 13,
+      "2025": 11
+    },
+    "forming-nation-states": {
+      "2008": 15,
+      "2009": 6,
+      "2011": 20,
+      "2012": 7,
+      "2013": 18,
+      "2015": 25,
+      "2016": 22,
+      "2017": 17,
+      "2018": 11,
+      "2019": 2,
+      "2020": 5,
+      "2023": 3,
+      "2024": 9,
+      "2025": 16
+    },
+    "global-economy": {
+      "2008": 6,
+      "2009": 12,
+      "2011": 10,
+      "2012": 8,
+      "2013": 10,
+      "2015": 11,
+      "2016": 8,
+      "2017": 12,
+      "2018": 10,
+      "2019": 3,
+      "2020": 6,
+      "2021": 6,
+      "2023": 4,
+      "2024": 1,
+      "2025": 15
+    },
+    "peacekeeping": {
+      "2000": 2,
+      "2008": 5,
+      "2009": 3,
+      "2011": 4,
+      "2012": 10,
+      "2013": 9,
+      "2015": 15,
+      "2016": 18,
+      "2017": 12,
+      "2018": 15,
+      "2019": 9,
+      "2020": 4,
+      "2021": 8,
+      "2023": 6
+    },
+    "regional-conflicts": {
+      "2000": 4,
+      "2008": 16,
+      "2009": 12,
+      "2011": 16,
+      "2012": 10,
+      "2013": 17,
+      "2015": 21,
+      "2016": 14,
+      "2017": 11,
+      "2018": 9,
+      "2019": 5,
+      "2020": 1,
+      "2021": 2,
+      "2023": 5,
+      "2024": 8,
+      "2025": 2
+    },
+    "regional-cooperation": {
+      "2008": 13,
+      "2009": 4,
+      "2011": 11,
+      "2012": 3,
+      "2013": 7,
+      "2015": 8,
+      "2016": 12,
+      "2017": 7,
+      "2018": 8,
+      "2019": 1,
+      "2020": 3,
+      "2025": 13
+    },
+    "source-analysis": {
+      "2008": 7,
+      "2009": 9,
+      "2011": 16,
+      "2012": 5,
+      "2013": 15,
+      "2015": 15,
+      "2016": 16,
+      "2017": 37,
+      "2018": 36,
+      "2019": 17,
+      "2020": 20,
+      "2021": 11,
+      "2023": 11,
+      "2025": 16
+    },
+    "southeast-asia": {
+      "2008": 35,
+      "2009": 18,
+      "2011": 39,
+      "2012": 22,
+      "2013": 40,
+      "2015": 45,
+      "2016": 40,
+      "2017": 52,
+      "2018": 60,
+      "2019": 13,
+      "2020": 15,
+      "2021": 4,
+      "2023": 39,
+      "2024": 9,
+      "2025": 44
+    },
+    "superpowers": {
+      "2000": 1,
+      "2008": 4,
+      "2009": 9,
+      "2011": 15,
+      "2012": 1,
+      "2013": 9,
+      "2015": 8,
+      "2016": 8,
+      "2017": 9,
+      "2018": 4,
+      "2019": 3,
+      "2020": 5,
+      "2023": 2,
+      "2025": 2
+    },
+    "united-nations": {
+      "2000": 1,
+      "2008": 12,
+      "2009": 15,
+      "2011": 19,
+      "2012": 14,
+      "2013": 10,
+      "2015": 18,
+      "2016": 13,
+      "2017": 21,
+      "2018": 19,
+      "2019": 7,
+      "2020": 7,
+      "2021": 12
+    }
+  },
+  "qtype_by_year": {
+    "causation": {
+      "2008": 18,
+      "2009": 31,
+      "2011": 49,
+      "2012": 24,
+      "2013": 25,
+      "2015": 30,
+      "2016": 41,
+      "2017": 10,
+      "2018": 19,
+      "2019": 4,
+      "2020": 10,
+      "2021": 4,
+      "2023": 1,
+      "2025": 5
+    },
+    "essay": {
+      "2008": 63,
+      "2009": 65,
+      "2011": 94,
+      "2012": 60,
+      "2013": 75,
+      "2015": 90,
+      "2016": 77,
+      "2017": 70,
+      "2018": 84,
+      "2019": 30,
+      "2020": 33,
+      "2021": 16,
+      "2023": 8,
+      "2024": 1,
+      "2025": 16
+    },
+    "evaluation": {
+      "2008": 53,
+      "2009": 59,
+      "2011": 83,
+      "2012": 51,
+      "2013": 76,
+      "2015": 84,
+      "2016": 80,
+      "2017": 78,
+      "2018": 91,
+      "2019": 30,
+      "2020": 38,
+      "2021": 20,
+      "2023": 11,
+      "2024": 1,
+      "2025": 15
+    },
+    "sbcs": {
+      "2008": 10,
+      "2009": 10,
+      "2011": 19,
+      "2012": 8,
+      "2013": 13,
+      "2015": 15,
+      "2016": 15,
+      "2017": 14,
+      "2018": 16,
+      "2019": 6,
+      "2020": 9,
+      "2021": 3,
+      "2023": 2,
+      "2025": 3
+    },
+    "sbcs-part-b": {
+      "2008": 7,
+      "2009": 6,
+      "2011": 10,
+      "2012": 4,
+      "2013": 12,
+      "2015": 10,
+      "2016": 12,
+      "2017": 16,
+      "2018": 18,
+      "2019": 8,
+      "2020": 8,
+      "2021": 3,
+      "2023": 3,
+      "2025": 5
+    },
+    "source-based": {
+      "2008": 9,
+      "2009": 9,
+      "2011": 11,
+      "2012": 6,
+      "2013": 12,
+      "2015": 13,
+      "2016": 12,
+      "2017": 17,
+      "2018": 28,
+      "2019": 12,
+      "2020": 6,
+      "2021": 2,
+      "2023": 3,
+      "2025": 4
+    },
+    "source-based-case-study": {
+      "2008": 12,
+      "2009": 10,
+      "2011": 18,
+      "2012": 8,
+      "2013": 14,
+      "2015": 16,
+      "2016": 15,
+      "2017": 15,
+      "2018": 18,
+      "2019": 7,
+      "2020": 9,
+      "2021": 3,
+      "2023": 2,
+      "2025": 4
+    },
+    "test-assertion": {
+      "2008": 8,
+      "2009": 8,
+      "2011": 16,
+      "2012": 5,
+      "2013": 12,
+      "2015": 11,
+      "2016": 14,
+      "2017": 15,
+      "2018": 17,
+      "2019": 6,
+      "2020": 8,
+      "2021": 3,
+      "2023": 3,
+      "2025": 3
+    }
+  },
+  "mark_distribution": {
+    "4": 1,
+    "6": 1,
+    "8": 1,
+    "10": 83,
+    "12": 1,
+    "20": 6,
+    "25": 293,
+    "30": 763,
+    "40": 144
+  },
+  "topic_cooccurrence": [
+    {
+      "a": "forming-nation-states",
+      "b": "southeast-asia",
+      "count": 170
+    },
+    {
+      "a": "peacekeeping",
+      "b": "united-nations",
+      "count": 96
+    },
+    {
+      "a": "asean",
+      "b": "regional-conflicts",
+      "count": 90
+    },
+    {
+      "a": "asean",
+      "b": "regional-cooperation",
+      "count": 89
+    },
+    {
+      "a": "asean",
+      "b": "source-analysis",
+      "count": 85
+    },
+    {
+      "a": "asean",
+      "b": "southeast-asia",
+      "count": 84
+    },
+    {
+      "a": "political-structures",
+      "b": "southeast-asia",
+      "count": 69
+    },
+    {
+      "a": "economic-development",
+      "b": "southeast-asia",
+      "count": 62
+    },
+    {
+      "a": "cold-war",
+      "b": "superpowers",
+      "count": 59
+    },
+    {
+      "a": "regional-conflicts",
+      "b": "southeast-asia",
+      "count": 57
+    },
+    {
+      "a": "cold-war",
+      "b": "source-analysis",
+      "count": 51
+    },
+    {
+      "a": "cold-war",
+      "b": "korean-war",
+      "count": 49
+    },
+    {
+      "a": "cold-war",
+      "b": "southeast-asia",
+      "count": 48
+    },
+    {
+      "a": "forming-nation-states",
+      "b": "political-structures",
+      "count": 47
+    },
+    {
+      "a": "cold-war",
+      "b": "united-nations",
+      "count": 46
+    },
+    {
+      "a": "source-analysis",
+      "b": "united-nations",
+      "count": 36
+    },
+    {
+      "a": "cold-war",
+      "b": "peacekeeping",
+      "count": 34
+    },
+    {
+      "a": "regional-cooperation",
+      "b": "southeast-asia",
+      "count": 33
+    },
+    {
+      "a": "regional-conflicts",
+      "b": "regional-cooperation",
+      "count": 29
+    },
+    {
+      "a": "cold-war",
+      "b": "forming-nation-states",
+      "count": 27
+    },
+    {
+      "a": "korean-war",
+      "b": "source-analysis",
+      "count": 22
+    },
+    {
+      "a": "korean-war",
+      "b": "superpowers",
+      "count": 20
+    },
+    {
+      "a": "regional-conflicts",
+      "b": "source-analysis",
+      "count": 18
+    },
+    {
+      "a": "peacekeeping",
+      "b": "source-analysis",
+      "count": 18
+    },
+    {
+      "a": "regional-cooperation",
+      "b": "source-analysis",
+      "count": 17
+    },
+    {
+      "a": "cold-war",
+      "b": "regional-conflicts",
+      "count": 16
+    },
+    {
+      "a": "source-analysis",
+      "b": "superpowers",
+      "count": 16
+    },
+    {
+      "a": "cold-war",
+      "b": "political-structures",
+      "count": 16
+    },
+    {
+      "a": "economic-development",
+      "b": "global-economy",
+      "count": 15
+    },
+    {
+      "a": "cold-war",
+      "b": "global-economy",
+      "count": 13
+    }
+  ],
+  "topic_keywords": {
+    "southeast-asia": [
+      {
+        "keyword": "southeast asia",
+        "count": 166
+      },
+      {
+        "keyword": "southeast-asia",
+        "count": 158
+      },
+      {
+        "keyword": "asean",
+        "count": 54
+      },
+      {
+        "keyword": "decolonisation",
+        "count": 48
+      },
+      {
+        "keyword": "post-independence",
+        "count": 46
+      },
+      {
+        "keyword": "independence",
+        "count": 42
+      }
+    ],
+    "cold-war": [
+      {
+        "keyword": "cold war",
+        "count": 90
+      },
+      {
+        "keyword": "cold-war",
+        "count": 57
+      },
+      {
+        "keyword": "superpowers",
+        "count": 42
+      },
+      {
+        "keyword": "containment",
+        "count": 25
+      },
+      {
+        "keyword": "peacekeeping",
+        "count": 24
+      },
+      {
+        "keyword": "southeast asia",
+        "count": 21
+      }
+    ],
+    "asean": [
+      {
+        "keyword": "asean",
+        "count": 164
+      },
+      {
+        "keyword": "source evaluation",
+        "count": 29
+      },
+      {
+        "keyword": "source-based-case-study",
+        "count": 29
+      },
+      {
+        "keyword": "provenance",
+        "count": 27
+      },
+      {
+        "keyword": "regional cooperation",
+        "count": 27
+      },
+      {
+        "keyword": "regional-cooperation",
+        "count": 27
+      }
+    ],
+    "source-analysis": [
+      {
+        "keyword": "source evaluation",
+        "count": 73
+      },
+      {
+        "keyword": "provenance",
+        "count": 60
+      },
+      {
+        "keyword": "reliability",
+        "count": 59
+      },
+      {
+        "keyword": "test assertion",
+        "count": 57
+      },
+      {
+        "keyword": "credibility",
+        "count": 54
+      },
+      {
+        "keyword": "test-assertion",
+        "count": 47
+      }
+    ],
+    "forming-nation-states": [
+      {
+        "keyword": "southeast-asia",
+        "count": 71
+      },
+      {
+        "keyword": "southeast asia",
+        "count": 63
+      },
+      {
+        "keyword": "decolonisation",
+        "count": 42
+      },
+      {
+        "keyword": "post-independence",
+        "count": 27
+      },
+      {
+        "keyword": "independence",
+        "count": 26
+      },
+      {
+        "keyword": "authoritarianism",
+        "count": 26
+      }
+    ]
+  }
+}

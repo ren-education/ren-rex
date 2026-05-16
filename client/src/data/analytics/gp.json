@@ -1,0 +1,638 @@
+{
+  "total_documents": 6742,
+  "questions": 5899,
+  "notes": 843,
+  "with_answer": 1737,
+  "with_mark": 4854,
+  "year_parseable": 3825,
+  "year_range": [
+    2008,
+    2025
+  ],
+  "questions_per_year": {
+    "2008": 229,
+    "2012": 192,
+    "2013": 778,
+    "2019": 79,
+    "2020": 310,
+    "2021": 367,
+    "2022": 563,
+    "2023": 554,
+    "2024": 372,
+    "2025": 381
+  },
+  "tag_field_counts": {
+    "exam_systems": 1,
+    "paper_types": 4,
+    "question_types": 19,
+    "schools": 26,
+    "topics": 314
+  },
+  "top_topics": {
+    "technology-and-society": 460,
+    "governance-and-leadership": 427,
+    "singapore-society": 366,
+    "values-and-ethics": 293,
+    "arts-and-culture": 273,
+    "education": 253,
+    "truth-and-ethics": 219,
+    "change-and-adaptation": 219,
+    "social-perception": 201,
+    "science-and-technology": 194,
+    "politics-and-public-rhetoric": 190,
+    "climate-change": 184,
+    "social-relations": 181,
+    "ethics-and-morality": 181,
+    "business-and-economy": 181,
+    "media-and-public": 177,
+    "globalisation": 164,
+    "materialism": 164,
+    "city-life": 161,
+    "international-relations": 161
+  },
+  "top_schools": {
+    "catholic-junior-college": 455,
+    "raffles-institution": 416,
+    "victoria-junior-college": 411,
+    "anglo-chinese-junior-college": 411,
+    "national-junior-college": 392,
+    "st-andrews-junior-college": 387,
+    "nanyang-junior-college": 367,
+    "hwa-chong-institution": 334,
+    "dunman-high-school": 303,
+    "temasek-junior-college": 291,
+    "millennia-institute": 272,
+    "river-valley-high-school": 260,
+    "jurong-junior-college": 242,
+    "anderson-junior-college": 228,
+    "jurong-pioneer-junior-college": 225
+  },
+  "question_types": {
+    "short-answer": 2159,
+    "essay": 1981,
+    "comprehension": 940,
+    "language-analysis": 862,
+    "explanation": 452,
+    "vocabulary": 342,
+    "summary": 323,
+    "application-question": 285,
+    "calculation": 31,
+    "inference": 25,
+    "cross-passage": 25,
+    "structured": 14,
+    "definition": 10,
+    "language-use": 8,
+    "graph-sketch": 7,
+    "passage": 6,
+    "paper-2-insert": 3,
+    "context": 3,
+    "application": 1
+  },
+  "paper_types": {
+    "paper-2": 4316,
+    "paper-1": 2089,
+    "paper-2-insert": 286,
+    "paper-3": 51
+  },
+  "topic_by_year": {
+    "arts-and-culture": {
+      "2008": 9,
+      "2012": 5,
+      "2013": 37,
+      "2019": 2,
+      "2020": 20,
+      "2021": 23,
+      "2022": 13,
+      "2023": 19,
+      "2024": 11,
+      "2025": 26
+    },
+    "change-and-adaptation": {
+      "2008": 3,
+      "2012": 4,
+      "2013": 16,
+      "2019": 1,
+      "2020": 9,
+      "2021": 10,
+      "2022": 6,
+      "2023": 47,
+      "2024": 14,
+      "2025": 32
+    },
+    "climate-change": {
+      "2008": 1,
+      "2012": 5,
+      "2013": 2,
+      "2019": 11,
+      "2020": 10,
+      "2021": 4,
+      "2022": 32,
+      "2023": 19,
+      "2024": 40,
+      "2025": 15
+    },
+    "education": {
+      "2008": 24,
+      "2012": 15,
+      "2013": 31,
+      "2019": 2,
+      "2020": 29,
+      "2021": 8,
+      "2022": 8,
+      "2023": 12,
+      "2024": 8,
+      "2025": 13
+    },
+    "governance-and-leadership": {
+      "2008": 11,
+      "2012": 14,
+      "2013": 63,
+      "2019": 10,
+      "2020": 15,
+      "2021": 19,
+      "2022": 36,
+      "2023": 39,
+      "2024": 18,
+      "2025": 34
+    },
+    "politics-and-public-rhetoric": {
+      "2008": 7,
+      "2012": 5,
+      "2013": 3,
+      "2019": 1,
+      "2020": 12,
+      "2021": 15,
+      "2022": 5,
+      "2023": 11,
+      "2024": 11,
+      "2025": 22
+    },
+    "science-and-technology": {
+      "2008": 21,
+      "2012": 13,
+      "2013": 20,
+      "2019": 5,
+      "2020": 5,
+      "2021": 7,
+      "2022": 13,
+      "2023": 11,
+      "2024": 8,
+      "2025": 9
+    },
+    "singapore-society": {
+      "2008": 13,
+      "2012": 14,
+      "2013": 32,
+      "2019": 6,
+      "2020": 22,
+      "2021": 13,
+      "2022": 34,
+      "2023": 37,
+      "2024": 23,
+      "2025": 25
+    },
+    "social-perception": {
+      "2008": 5,
+      "2012": 2,
+      "2013": 46,
+      "2020": 10,
+      "2021": 2,
+      "2022": 24,
+      "2023": 12,
+      "2024": 11,
+      "2025": 5
+    },
+    "technology-and-society": {
+      "2008": 22,
+      "2012": 8,
+      "2013": 46,
+      "2019": 4,
+      "2020": 32,
+      "2021": 16,
+      "2022": 22,
+      "2023": 46,
+      "2024": 18,
+      "2025": 22
+    },
+    "truth-and-ethics": {
+      "2008": 5,
+      "2012": 2,
+      "2013": 18,
+      "2019": 3,
+      "2020": 5,
+      "2021": 2,
+      "2022": 24,
+      "2023": 7,
+      "2024": 13,
+      "2025": 13
+    },
+    "values-and-ethics": {
+      "2008": 12,
+      "2012": 8,
+      "2013": 34,
+      "2019": 8,
+      "2020": 15,
+      "2021": 8,
+      "2022": 22,
+      "2023": 18,
+      "2024": 7,
+      "2025": 20
+    }
+  },
+  "qtype_by_year": {
+    "application-question": {
+      "2008": 7,
+      "2012": 8,
+      "2013": 28,
+      "2019": 3,
+      "2020": 15,
+      "2021": 18,
+      "2022": 22,
+      "2023": 21,
+      "2024": 19,
+      "2025": 17
+    },
+    "comprehension": {
+      "2008": 19,
+      "2012": 27,
+      "2013": 92,
+      "2019": 19,
+      "2020": 64,
+      "2021": 28,
+      "2022": 57,
+      "2023": 82,
+      "2024": 31,
+      "2025": 75
+    },
+    "essay": {
+      "2008": 108,
+      "2012": 73,
+      "2013": 264,
+      "2019": 36,
+      "2020": 108,
+      "2021": 60,
+      "2022": 145,
+      "2023": 192,
+      "2024": 97,
+      "2025": 113
+    },
+    "explanation": {
+      "2008": 5,
+      "2012": 18,
+      "2013": 27,
+      "2020": 14,
+      "2021": 18,
+      "2022": 82,
+      "2023": 24,
+      "2024": 23,
+      "2025": 18
+    },
+    "language-analysis": {
+      "2008": 21,
+      "2012": 22,
+      "2013": 94,
+      "2019": 6,
+      "2020": 46,
+      "2021": 49,
+      "2022": 78,
+      "2023": 53,
+      "2024": 48,
+      "2025": 42
+    },
+    "short-answer": {
+      "2008": 55,
+      "2012": 41,
+      "2013": 272,
+      "2019": 17,
+      "2020": 94,
+      "2021": 156,
+      "2022": 186,
+      "2023": 181,
+      "2024": 119,
+      "2025": 100
+    },
+    "summary": {
+      "2008": 9,
+      "2012": 7,
+      "2013": 35,
+      "2019": 3,
+      "2020": 14,
+      "2021": 23,
+      "2022": 24,
+      "2023": 26,
+      "2024": 22,
+      "2025": 21
+    },
+    "vocabulary": {
+      "2008": 10,
+      "2012": 27,
+      "2013": 27,
+      "2020": 8,
+      "2021": 5,
+      "2022": 13,
+      "2023": 16,
+      "2024": 4,
+      "2025": 2
+    }
+  },
+  "mark_distribution": {
+    "1": 1058,
+    "2": 1697,
+    "3": 325,
+    "4": 2,
+    "5": 41,
+    "6": 1,
+    "7": 10,
+    "8": 365,
+    "9": 4,
+    "10": 185,
+    "12": 30,
+    "20": 1,
+    "30": 55,
+    "50": 1080
+  },
+  "topic_cooccurrence": [
+    {
+      "a": "governance-and-leadership",
+      "b": "politics-and-public-rhetoric",
+      "count": 42
+    },
+    {
+      "a": "science-and-technology",
+      "b": "technology-and-society",
+      "count": 37
+    },
+    {
+      "a": "ethics-and-morality",
+      "b": "science-and-technology",
+      "count": 36
+    },
+    {
+      "a": "governance-and-leadership",
+      "b": "singapore-society",
+      "count": 31
+    },
+    {
+      "a": "technology-and-society",
+      "b": "truth-and-ethics",
+      "count": 30
+    },
+    {
+      "a": "education",
+      "b": "singapore-society",
+      "count": 29
+    },
+    {
+      "a": "truth-and-ethics",
+      "b": "values-and-ethics",
+      "count": 27
+    },
+    {
+      "a": "arts-and-culture",
+      "b": "singapore-society",
+      "count": 25
+    },
+    {
+      "a": "social-relations",
+      "b": "values-and-ethics",
+      "count": 21
+    },
+    {
+      "a": "education",
+      "b": "technology-and-society",
+      "count": 19
+    },
+    {
+      "a": "singapore-society",
+      "b": "values-and-ethics",
+      "count": 19
+    },
+    {
+      "a": "climate-change",
+      "b": "governance-and-leadership",
+      "count": 18
+    },
+    {
+      "a": "arts-and-culture",
+      "b": "technology-and-society",
+      "count": 18
+    },
+    {
+      "a": "governance-and-leadership",
+      "b": "values-and-ethics",
+      "count": 16
+    },
+    {
+      "a": "arts-and-culture",
+      "b": "education",
+      "count": 16
+    },
+    {
+      "a": "change-and-adaptation",
+      "b": "ethics-and-morality",
+      "count": 16
+    },
+    {
+      "a": "ethics-and-morality",
+      "b": "values-and-ethics",
+      "count": 15
+    },
+    {
+      "a": "social-perception",
+      "b": "truth-and-ethics",
+      "count": 14
+    },
+    {
+      "a": "governance-and-leadership",
+      "b": "technology-and-society",
+      "count": 14
+    },
+    {
+      "a": "education",
+      "b": "values-and-ethics",
+      "count": 14
+    },
+    {
+      "a": "politics-and-public-rhetoric",
+      "b": "truth-and-ethics",
+      "count": 13
+    },
+    {
+      "a": "governance-and-leadership",
+      "b": "truth-and-ethics",
+      "count": 12
+    },
+    {
+      "a": "business-and-economy",
+      "b": "technology-and-society",
+      "count": 12
+    },
+    {
+      "a": "climate-change",
+      "b": "singapore-society",
+      "count": 12
+    },
+    {
+      "a": "change-and-adaptation",
+      "b": "singapore-society",
+      "count": 12
+    },
+    {
+      "a": "ethics-and-morality",
+      "b": "governance-and-leadership",
+      "count": 12
+    },
+    {
+      "a": "science-and-technology",
+      "b": "values-and-ethics",
+      "count": 12
+    },
+    {
+      "a": "social-relations",
+      "b": "technology-and-society",
+      "count": 12
+    },
+    {
+      "a": "singapore-society",
+      "b": "technology-and-society",
+      "count": 12
+    },
+    {
+      "a": "change-and-adaptation",
+      "b": "governance-and-leadership",
+      "count": 11
+    }
+  ],
+  "topic_keywords": {
+    "technology-and-society": [
+      {
+        "keyword": "technology",
+        "count": 68
+      },
+      {
+        "keyword": "internet",
+        "count": 29
+      },
+      {
+        "keyword": "summary",
+        "count": 22
+      },
+      {
+        "keyword": "social media",
+        "count": 15
+      },
+      {
+        "keyword": "vocabulary",
+        "count": 12
+      },
+      {
+        "keyword": "digital age",
+        "count": 12
+      }
+    ],
+    "governance-and-leadership": [
+      {
+        "keyword": "government",
+        "count": 35
+      },
+      {
+        "keyword": "governance",
+        "count": 30
+      },
+      {
+        "keyword": "singapore",
+        "count": 22
+      },
+      {
+        "keyword": "leadership",
+        "count": 21
+      },
+      {
+        "keyword": "governments",
+        "count": 18
+      },
+      {
+        "keyword": "democracy",
+        "count": 17
+      }
+    ],
+    "singapore-society": [
+      {
+        "keyword": "society",
+        "count": 90
+      },
+      {
+        "keyword": "your society",
+        "count": 83
+      },
+      {
+        "keyword": "singapore",
+        "count": 83
+      },
+      {
+        "keyword": "arts",
+        "count": 18
+      },
+      {
+        "keyword": "education",
+        "count": 16
+      },
+      {
+        "keyword": "agree",
+        "count": 15
+      }
+    ],
+    "values-and-ethics": [
+      {
+        "keyword": "values",
+        "count": 20
+      },
+      {
+        "keyword": "society",
+        "count": 20
+      },
+      {
+        "keyword": "freedom",
+        "count": 9
+      },
+      {
+        "keyword": "summary",
+        "count": 9
+      },
+      {
+        "keyword": "virtue",
+        "count": 7
+      },
+      {
+        "keyword": "honesty",
+        "count": 7
+      }
+    ],
+    "arts-and-culture": [
+      {
+        "keyword": "arts",
+        "count": 50
+      },
+      {
+        "keyword": "society",
+        "count": 31
+      },
+      {
+        "keyword": "singapore",
+        "count": 17
+      },
+      {
+        "keyword": "value",
+        "count": 16
+      },
+      {
+        "keyword": "culture",
+        "count": 16
+      },
+      {
+        "keyword": "museums",
+        "count": 15
+      }
+    ]
+  }
+}

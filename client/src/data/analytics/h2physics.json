@@ -1,0 +1,717 @@
+{
+  "total_documents": 13366,
+  "questions": 10305,
+  "notes": 3061,
+  "with_answer": 5209,
+  "with_mark": 8941,
+  "year_parseable": 12940,
+  "year_range": [
+    2011,
+    2025
+  ],
+  "questions_per_year": {
+    "2011": 789,
+    "2013": 209,
+    "2015": 590,
+    "2016": 760,
+    "2017": 204,
+    "2018": 1613,
+    "2019": 882,
+    "2020": 344,
+    "2021": 915,
+    "2022": 1569,
+    "2023": 1823,
+    "2024": 1404,
+    "2025": 1838
+  },
+  "tag_field_counts": {
+    "exam_systems": 1,
+    "paper_types": 6,
+    "question_types": 70,
+    "schools": 24,
+    "source_types": 9,
+    "topics": 858
+  },
+  "top_topics": {
+    "forces": 883,
+    "nuclear-physics": 800,
+    "quantum-physics": 779,
+    "oscillations": 696,
+    "simple-harmonic-motion": 663,
+    "circular-motion": 652,
+    "kinematics": 626,
+    "dynamics": 604,
+    "electromagnetic-induction": 589,
+    "waves": 575,
+    "electric-fields": 559,
+    "measurement": 549,
+    "superposition": 539,
+    "electromagnetism": 526,
+    "thermal-physics": 511,
+    "work-energy-power": 472,
+    "dc-circuits": 467,
+    "gravitation": 462,
+    "current-electricity": 384,
+    "projectile-motion": 351
+  },
+  "top_schools": {
+    "hwa-chong-institution": 1063,
+    "raffles-institution": 1044,
+    "national-junior-college": 915,
+    "catholic-junior-college": 874,
+    "nanyang-junior-college": 827,
+    "temasek-junior-college": 794,
+    "anderson-serangoon-junior-college": 768,
+    "dunman-high-school": 751,
+    "eunoia-junior-college": 676,
+    "victoria-junior-college": 667,
+    "river-valley-high-school": 600,
+    "anglo-chinese-junior-college": 585,
+    "tampines-meridian-junior-college": 527,
+    "millennia-institute": 472,
+    "st-andrews-junior-college": 439
+  },
+  "question_types": {
+    "calculation": 3896,
+    "explanation": 1994,
+    "structured": 1990,
+    "multiple-choice": 1465,
+    "mcq": 958,
+    "definition": 721,
+    "practical": 458,
+    "derivation": 290,
+    "conceptual": 203,
+    "diagram": 131,
+    "graphical-analysis": 110,
+    "sketch": 93,
+    "planning": 88,
+    "graph-sketching": 84,
+    "measurement": 82,
+    "graph-sketch": 77,
+    "data-analysis": 64,
+    "experimental-design": 58,
+    "tutorial": 50,
+    "sketch-graph": 43
+  },
+  "paper_types": {
+    "paper-3": 4141,
+    "paper-2": 3910,
+    "paper-1": 2932,
+    "paper-4": 1072,
+    "tutorial": 115,
+    "notes": 3
+  },
+  "topic_by_year": {
+    "circular-motion": {
+      "2011": 32,
+      "2013": 15,
+      "2015": 25,
+      "2016": 31,
+      "2017": 4,
+      "2018": 55,
+      "2019": 46,
+      "2020": 29,
+      "2021": 55,
+      "2022": 100,
+      "2023": 110,
+      "2024": 84,
+      "2025": 60
+    },
+    "dynamics": {
+      "2011": 33,
+      "2013": 7,
+      "2015": 20,
+      "2016": 24,
+      "2017": 5,
+      "2018": 76,
+      "2019": 27,
+      "2020": 15,
+      "2021": 43,
+      "2022": 71,
+      "2023": 113,
+      "2024": 58,
+      "2025": 101
+    },
+    "electric-fields": {
+      "2011": 33,
+      "2013": 3,
+      "2015": 13,
+      "2016": 31,
+      "2017": 8,
+      "2018": 50,
+      "2019": 20,
+      "2020": 11,
+      "2021": 40,
+      "2022": 64,
+      "2023": 58,
+      "2024": 73,
+      "2025": 77
+    },
+    "electromagnetic-induction": {
+      "2011": 44,
+      "2013": 9,
+      "2015": 38,
+      "2016": 44,
+      "2017": 11,
+      "2018": 56,
+      "2019": 35,
+      "2020": 12,
+      "2021": 30,
+      "2022": 91,
+      "2023": 70,
+      "2024": 59,
+      "2025": 79
+    },
+    "forces": {
+      "2011": 59,
+      "2013": 16,
+      "2015": 39,
+      "2016": 32,
+      "2017": 6,
+      "2018": 95,
+      "2019": 48,
+      "2020": 27,
+      "2021": 84,
+      "2022": 80,
+      "2023": 137,
+      "2024": 85,
+      "2025": 141
+    },
+    "kinematics": {
+      "2011": 41,
+      "2013": 14,
+      "2015": 34,
+      "2016": 46,
+      "2017": 7,
+      "2018": 60,
+      "2019": 41,
+      "2020": 17,
+      "2021": 56,
+      "2022": 57,
+      "2023": 60,
+      "2024": 71,
+      "2025": 116
+    },
+    "measurement": {
+      "2011": 32,
+      "2013": 3,
+      "2015": 11,
+      "2016": 21,
+      "2017": 10,
+      "2018": 71,
+      "2019": 44,
+      "2020": 23,
+      "2021": 26,
+      "2022": 51,
+      "2023": 94,
+      "2024": 79,
+      "2025": 66
+    },
+    "nuclear-physics": {
+      "2011": 74,
+      "2013": 7,
+      "2015": 63,
+      "2016": 42,
+      "2017": 10,
+      "2018": 116,
+      "2019": 63,
+      "2020": 1,
+      "2021": 38,
+      "2022": 72,
+      "2023": 120,
+      "2024": 81,
+      "2025": 98
+    },
+    "oscillations": {
+      "2011": 31,
+      "2013": 4,
+      "2015": 25,
+      "2016": 29,
+      "2017": 9,
+      "2018": 117,
+      "2019": 32,
+      "2020": 25,
+      "2021": 54,
+      "2022": 86,
+      "2023": 118,
+      "2024": 77,
+      "2025": 77
+    },
+    "quantum-physics": {
+      "2011": 73,
+      "2013": 6,
+      "2015": 45,
+      "2016": 58,
+      "2017": 19,
+      "2018": 98,
+      "2019": 47,
+      "2020": 24,
+      "2021": 61,
+      "2022": 89,
+      "2023": 67,
+      "2024": 81,
+      "2025": 92
+    },
+    "simple-harmonic-motion": {
+      "2011": 46,
+      "2013": 2,
+      "2015": 25,
+      "2016": 38,
+      "2017": 4,
+      "2018": 92,
+      "2019": 39,
+      "2020": 16,
+      "2021": 47,
+      "2022": 76,
+      "2023": 112,
+      "2024": 59,
+      "2025": 91
+    },
+    "waves": {
+      "2011": 27,
+      "2013": 12,
+      "2015": 26,
+      "2016": 31,
+      "2017": 6,
+      "2018": 81,
+      "2019": 31,
+      "2020": 15,
+      "2021": 28,
+      "2022": 79,
+      "2023": 114,
+      "2024": 23,
+      "2025": 85
+    }
+  },
+  "qtype_by_year": {
+    "calculation": {
+      "2011": 238,
+      "2013": 74,
+      "2015": 206,
+      "2016": 208,
+      "2017": 86,
+      "2018": 529,
+      "2019": 293,
+      "2020": 85,
+      "2021": 230,
+      "2022": 462,
+      "2023": 502,
+      "2024": 376,
+      "2025": 557
+    },
+    "definition": {
+      "2011": 43,
+      "2013": 14,
+      "2015": 40,
+      "2016": 60,
+      "2017": 18,
+      "2018": 101,
+      "2019": 41,
+      "2020": 15,
+      "2021": 45,
+      "2022": 87,
+      "2023": 92,
+      "2024": 70,
+      "2025": 88
+    },
+    "derivation": {
+      "2011": 30,
+      "2013": 7,
+      "2015": 13,
+      "2016": 19,
+      "2018": 31,
+      "2019": 19,
+      "2020": 5,
+      "2021": 27,
+      "2022": 36,
+      "2023": 30,
+      "2024": 25,
+      "2025": 45
+    },
+    "explanation": {
+      "2011": 126,
+      "2013": 18,
+      "2015": 117,
+      "2016": 144,
+      "2017": 45,
+      "2018": 282,
+      "2019": 166,
+      "2020": 48,
+      "2021": 108,
+      "2022": 267,
+      "2023": 215,
+      "2024": 202,
+      "2025": 234
+    },
+    "mcq": {
+      "2011": 123,
+      "2013": 50,
+      "2015": 50,
+      "2016": 50,
+      "2017": 10,
+      "2018": 117,
+      "2019": 64,
+      "2020": 7,
+      "2021": 76,
+      "2022": 140,
+      "2023": 89,
+      "2024": 65,
+      "2025": 117
+    },
+    "multiple-choice": {
+      "2011": 151,
+      "2013": 43,
+      "2015": 45,
+      "2016": 102,
+      "2017": 11,
+      "2018": 124,
+      "2019": 166,
+      "2020": 94,
+      "2021": 140,
+      "2022": 168,
+      "2023": 206,
+      "2024": 53,
+      "2025": 149
+    },
+    "practical": {
+      "2015": 3,
+      "2016": 1,
+      "2017": 15,
+      "2018": 119,
+      "2019": 41,
+      "2020": 22,
+      "2021": 31,
+      "2022": 94,
+      "2023": 19,
+      "2024": 113
+    },
+    "structured": {
+      "2011": 127,
+      "2013": 36,
+      "2015": 108,
+      "2016": 137,
+      "2017": 31,
+      "2018": 336,
+      "2019": 156,
+      "2020": 57,
+      "2021": 109,
+      "2022": 256,
+      "2023": 269,
+      "2024": 144,
+      "2025": 205
+    }
+  },
+  "mark_distribution": {
+    "0": 1,
+    "1": 4082,
+    "2": 2663,
+    "3": 896,
+    "4": 249,
+    "5": 99,
+    "6": 101,
+    "7": 73,
+    "8": 151,
+    "9": 75,
+    "10": 146,
+    "11": 58,
+    "12": 139,
+    "13": 19,
+    "14": 20,
+    "15": 16,
+    "16": 3,
+    "17": 4,
+    "18": 3,
+    "19": 7,
+    "20": 100,
+    "21": 19,
+    "22": 11,
+    "23": 1,
+    "24": 2,
+    "25": 1,
+    "30": 2
+  },
+  "topic_cooccurrence": [
+    {
+      "a": "oscillations",
+      "b": "simple-harmonic-motion",
+      "count": 340
+    },
+    {
+      "a": "superposition",
+      "b": "waves",
+      "count": 166
+    },
+    {
+      "a": "dynamics",
+      "b": "forces",
+      "count": 142
+    },
+    {
+      "a": "circular-motion",
+      "b": "forces",
+      "count": 84
+    },
+    {
+      "a": "dynamics",
+      "b": "kinematics",
+      "count": 47
+    },
+    {
+      "a": "electromagnetic-induction",
+      "b": "electromagnetism",
+      "count": 46
+    },
+    {
+      "a": "electric-fields",
+      "b": "electromagnetism",
+      "count": 41
+    },
+    {
+      "a": "circular-motion",
+      "b": "dynamics",
+      "count": 40
+    },
+    {
+      "a": "circular-motion",
+      "b": "electromagnetism",
+      "count": 34
+    },
+    {
+      "a": "measurement",
+      "b": "oscillations",
+      "count": 33
+    },
+    {
+      "a": "nuclear-physics",
+      "b": "quantum-physics",
+      "count": 28
+    },
+    {
+      "a": "electric-fields",
+      "b": "forces",
+      "count": 23
+    },
+    {
+      "a": "forces",
+      "b": "simple-harmonic-motion",
+      "count": 22
+    },
+    {
+      "a": "dynamics",
+      "b": "electric-fields",
+      "count": 21
+    },
+    {
+      "a": "electromagnetism",
+      "b": "forces",
+      "count": 20
+    },
+    {
+      "a": "electric-fields",
+      "b": "kinematics",
+      "count": 16
+    },
+    {
+      "a": "circular-motion",
+      "b": "kinematics",
+      "count": 15
+    },
+    {
+      "a": "kinematics",
+      "b": "measurement",
+      "count": 15
+    },
+    {
+      "a": "circular-motion",
+      "b": "simple-harmonic-motion",
+      "count": 14
+    },
+    {
+      "a": "forces",
+      "b": "kinematics",
+      "count": 14
+    },
+    {
+      "a": "electromagnetic-induction",
+      "b": "oscillations",
+      "count": 14
+    },
+    {
+      "a": "electromagnetism",
+      "b": "nuclear-physics",
+      "count": 13
+    },
+    {
+      "a": "quantum-physics",
+      "b": "waves",
+      "count": 12
+    },
+    {
+      "a": "electric-fields",
+      "b": "nuclear-physics",
+      "count": 12
+    },
+    {
+      "a": "measurement",
+      "b": "thermal-physics",
+      "count": 12
+    },
+    {
+      "a": "dynamics",
+      "b": "simple-harmonic-motion",
+      "count": 10
+    },
+    {
+      "a": "electromagnetic-induction",
+      "b": "forces",
+      "count": 10
+    },
+    {
+      "a": "electric-fields",
+      "b": "quantum-physics",
+      "count": 9
+    },
+    {
+      "a": "simple-harmonic-motion",
+      "b": "waves",
+      "count": 9
+    },
+    {
+      "a": "measurement",
+      "b": "simple-harmonic-motion",
+      "count": 9
+    }
+  ],
+  "topic_keywords": {
+    "forces": [
+      {
+        "keyword": "equilibrium",
+        "count": 239
+      },
+      {
+        "keyword": "forces",
+        "count": 140
+      },
+      {
+        "keyword": "moments",
+        "count": 115
+      },
+      {
+        "keyword": "tension",
+        "count": 97
+      },
+      {
+        "keyword": "upthrust",
+        "count": 79
+      },
+      {
+        "keyword": "friction",
+        "count": 44
+      }
+    ],
+    "nuclear-physics": [
+      {
+        "keyword": "half-life",
+        "count": 128
+      },
+      {
+        "keyword": "radioactive decay",
+        "count": 78
+      },
+      {
+        "keyword": "nuclear-physics",
+        "count": 73
+      },
+      {
+        "keyword": "binding energy",
+        "count": 72
+      },
+      {
+        "keyword": "radioactivity",
+        "count": 65
+      },
+      {
+        "keyword": "activity",
+        "count": 63
+      }
+    ],
+    "quantum-physics": [
+      {
+        "keyword": "photoelectric effect",
+        "count": 98
+      },
+      {
+        "keyword": "x-rays",
+        "count": 83
+      },
+      {
+        "keyword": "energy levels",
+        "count": 68
+      },
+      {
+        "keyword": "photoelectric-effect",
+        "count": 55
+      },
+      {
+        "keyword": "quantum-physics",
+        "count": 48
+      },
+      {
+        "keyword": "wavelength",
+        "count": 41
+      }
+    ],
+    "oscillations": [
+      {
+        "keyword": "oscillations",
+        "count": 108
+      },
+      {
+        "keyword": "simple harmonic motion",
+        "count": 90
+      },
+      {
+        "keyword": "period",
+        "count": 85
+      },
+      {
+        "keyword": "shm",
+        "count": 85
+      },
+      {
+        "keyword": "resonance",
+        "count": 63
+      },
+      {
+        "keyword": "simple-harmonic-motion",
+        "count": 50
+      }
+    ],
+    "simple-harmonic-motion": [
+      {
+        "keyword": "simple harmonic motion",
+        "count": 140
+      },
+      {
+        "keyword": "shm",
+        "count": 125
+      },
+      {
+        "keyword": "simple-harmonic-motion",
+        "count": 76
+      },
+      {
+        "keyword": "oscillations",
+        "count": 74
+      },
+      {
+        "keyword": "period",
+        "count": 72
+      },
+      {
+        "keyword": "acceleration",
+        "count": 51
+      }
+    ]
+  }
+}
