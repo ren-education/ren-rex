@@ -40,7 +40,7 @@ export default async function Home() {
           <span className="text-[0.7rem] text-muted-foreground">
             by{" "}
             <a
-              href="https://ren.education"
+              href="https://reneducation.com"
               target="_blank"
               rel="noopener noreferrer"
               className="font-sans font-bold tracking-tight text-foreground transition-opacity hover:opacity-70"
