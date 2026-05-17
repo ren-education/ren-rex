@@ -94,7 +94,7 @@ fn row_to_document(row: &rusqlite::Row<'_>) -> rusqlite::Result<Document> {
         confidence: pdf_confidence.unwrap_or(0.0) as f32,
         fallback_reason: pdf_fallback_reason
             .as_deref()
-            .and_then(FallbackReason::from_str),
+            .and_then(|s| s.parse::<FallbackReason>().ok()),
     });
 
     Ok(Document {
@@ -239,8 +239,8 @@ impl ItemStore for SqliteStore {
             .optional()
             .map_err(map_err)?;
         if let Some(doc) = doc_opt.as_mut() {
-            let mut docs = std::slice::from_mut(doc);
-            load_tags_into(&conn, &mut docs).map_err(map_err)?;
+            let docs = std::slice::from_mut(doc);
+            load_tags_into(&conn, docs).map_err(map_err)?;
         }
         Ok(doc_opt)
     }

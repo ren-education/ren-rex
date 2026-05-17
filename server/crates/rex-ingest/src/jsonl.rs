@@ -186,6 +186,7 @@ impl JsonlRow {
 ///   - plain string  `"some text"`             →  `"some text"`
 ///   - labelled obj  `{"label":"A","text":"..."}` → `"A. ..."`
 ///   - other obj     `{"value": "..."}`            → `"..."`
+///
 /// Unrecognized shapes fall back to the JSON serialization so no information
 /// is silently lost in the index.
 fn flatten_option_value(v: serde_json::Value) -> String {

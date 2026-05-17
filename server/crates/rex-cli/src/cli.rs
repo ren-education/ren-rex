@@ -44,13 +44,13 @@ pub enum Cmd {
     ///
     /// TWO INPUT MODES:
     ///   * --file <path> --kind <question|note>
-    ///       Validate one JSONL file directly. `--kind` tells the
-    ///       domain-mapping step which body field to expect (`question`
-    ///       for questions.jsonl, `content` for notes.jsonl).
+    ///     Validate one JSONL file directly. `--kind` tells the
+    ///     domain-mapping step which body field to expect (`question`
+    ///     for questions.jsonl, `content` for notes.jsonl).
     ///   * --subject <id> --workspace <path>
-    ///       Validate the standard pair under
-    ///       <workspace>/<subject>/reference/{questions,notes}.jsonl —
-    ///       the same layout `rex ingest` reads.
+    ///     Validate the standard pair under
+    ///     <workspace>/<subject>/reference/{questions,notes}.jsonl —
+    ///     the same layout `rex ingest` reads.
     ///
     /// OUTPUT:
     ///   Errors are bucketed by signature (serde's `at line N column M`

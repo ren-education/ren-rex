@@ -24,6 +24,9 @@ use crate::jsonl::JsonlRow;
 /// count is always preserved; this just caps how many we print/serialize.
 pub const MAX_SAMPLES_PER_SIGNATURE: usize = 5;
 
+/// Bucketed parse errors: signature + optional field name → (total count, sample lines).
+type ErrorBuckets = BTreeMap<(String, Option<String>), (u64, Vec<u64>)>;
+
 /// Result of validating a single JSONL file.
 #[derive(Debug, Clone, Serialize)]
 pub struct ValidateFileReport {
@@ -161,7 +164,7 @@ pub fn validate_subject(
 }
 
 fn record(
-    by_sig: &mut BTreeMap<(String, Option<String>), (u64, Vec<u64>)>,
+    by_sig: &mut ErrorBuckets,
     signature: String,
     field: Option<String>,
     lineno: u64,

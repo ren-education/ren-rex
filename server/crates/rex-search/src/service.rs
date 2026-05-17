@@ -188,7 +188,7 @@ impl SearchService {
 
 fn validate_query(q: &SearchQuery) -> Result<()> {
     match (&q.text, q.mode) {
-        (Some(t), m) if matches!(m, SearchMode::Filter) => {
+        (Some(t), SearchMode::Filter) => {
             return Err(Error::bad_input_field(
                 format!(
                     "text {:?} provided with mode=Filter; use /v1/filter or `rex filter`",

@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use rex_domain::{
-    Document, DocumentId, DocumentKind, Embedding, FallbackReason, Filters, FtsIndex, ItemStore,
+    Document, DocumentId, DocumentKind, Embedding, Filters, FtsIndex, ItemStore,
     PdfAnchor, SourcePath, SubjectId, TagField, TagValue, Tags, VectorStore,
 };
 use rex_sqlite::{open_db, SqliteStore};
@@ -205,7 +205,7 @@ async fn facet_counts_respect_filters() {
 #[tokio::test]
 async fn list_subjects_returns_question_note_counts() {
     let s = store();
-    let mut d1 = make_doc("a", "h2physics", &["dynamics"], &["hci"]);
+    let d1 = make_doc("a", "h2physics", &["dynamics"], &["hci"]);
     let mut d2 = make_doc("b", "h2physics", &["dynamics"], &["hci"]);
     d2.kind = DocumentKind::Note;
     s.put(&[d1.clone(), d2.clone()]).await.unwrap();

@@ -2,6 +2,7 @@
 //! the source PDF page.
 
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
@@ -40,12 +41,17 @@ impl FallbackReason {
         }
     }
 
-    pub fn from_str(s: &str) -> Option<Self> {
+}
+
+impl FromStr for FallbackReason {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "LowConfidence" => Some(FallbackReason::LowConfidence),
-            "PdfReadFailed" => Some(FallbackReason::PdfReadFailed),
-            "PdfNotFound" => Some(FallbackReason::PdfNotFound),
-            _ => None,
+            "LowConfidence" => Ok(FallbackReason::LowConfidence),
+            "PdfReadFailed" => Ok(FallbackReason::PdfReadFailed),
+            "PdfNotFound" => Ok(FallbackReason::PdfNotFound),
+            _ => Err(()),
         }
     }
 }

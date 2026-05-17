@@ -13,3 +13,6 @@ thiserror.workspace = true
 pdf-extract = "0.7"
 
 [dev-dependencies]
+
+[lints]
+workspace = true

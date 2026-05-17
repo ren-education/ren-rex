@@ -27,3 +27,6 @@ lru.workspace = true
 [dev-dependencies]
 tokio = { version = "1", features = ["macros", "rt"] }
 tower = { version = "0.4", features = ["util"] }
+
+[lints]
+workspace = true

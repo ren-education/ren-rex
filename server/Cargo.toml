@@ -66,3 +66,9 @@ rex-api = { path = "crates/rex-api" }
 [profile.release]
 lto = "thin"
 codegen-units = 1
+
+# Workspace-wide clippy configuration. Each member crate opts in via
+# `[lints] workspace = true`. `priority = -1` so individual lints can be
+# downgraded at the default priority without conflicting.
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }

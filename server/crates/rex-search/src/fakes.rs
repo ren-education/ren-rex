@@ -233,7 +233,7 @@ impl VectorStore for FakeVectorStore {
             .iter()
             .filter_map(|(id, vec, _)| {
                 let doc = lookup.get(id)?;
-                if !filters.matches(&doc) {
+                if !filters.matches(doc) {
                     return None;
                 }
                 let sim = cosine(query.as_slice(), vec);
@@ -320,7 +320,7 @@ impl FtsIndex for FakeFtsIndex {
             .iter()
             .filter_map(|(id, text, _)| {
                 let doc = lookup.get(id)?;
-                if !filters.matches(&doc) {
+                if !filters.matches(doc) {
                     return None;
                 }
                 let lower = text.to_lowercase();

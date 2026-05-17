@@ -117,7 +117,7 @@ fn render_snippet(text: &str, start: usize, end: usize, terms: &[String]) -> Str
     }
 
     if start > 0 {
-        result.insert_str(0, "…");
+        result.insert(0, '…');
     }
     if end < text.len() {
         result.push('…');

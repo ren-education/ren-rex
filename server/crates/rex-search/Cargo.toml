@@ -24,3 +24,6 @@ rex-search = { path = ".", features = ["fakes"] }
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 uuid = { version = "1", features = ["v4"] }
 proptest = "1"
+
+[lints]
+workspace = true

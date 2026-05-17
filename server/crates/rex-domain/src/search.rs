@@ -6,18 +6,15 @@ use crate::document::{Document, DocumentKind};
 use crate::ids::{SubjectId, TagValue};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Default)]
 pub enum SearchMode {
+    #[default]
     Hybrid,
     Bm25Only,
     VectorOnly,
     Filter,
 }
 
-impl Default for SearchMode {
-    fn default() -> Self {
-        SearchMode::Hybrid
-    }
-}
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Filters {
