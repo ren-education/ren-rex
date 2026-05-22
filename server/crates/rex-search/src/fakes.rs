@@ -184,6 +184,21 @@ impl ItemStore for FakeItemStore {
         g.retain(|_, d| &d.subject != subject);
         Ok(())
     }
+
+    async fn find_foreign_ids(
+        &self,
+        subject: &SubjectId,
+        ids: &[DocumentId],
+    ) -> Result<Vec<(DocumentId, SubjectId)>> {
+        let g = self.inner.lock().unwrap();
+        Ok(ids
+            .iter()
+            .filter_map(|id| match g.get(id) {
+                Some(d) if &d.subject != subject => Some((*id, d.subject.clone())),
+                _ => None,
+            })
+            .collect())
+    }
 }
 
 // ─── VectorStore ───────────────────────────────────────────────────────

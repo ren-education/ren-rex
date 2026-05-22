@@ -230,3 +230,33 @@ async fn clear_removes_only_that_subject() {
     assert_eq!(docs.len(), 1);
     assert_eq!(docs[0].subject.0, "hcchem");
 }
+
+#[tokio::test]
+async fn find_foreign_ids_flags_cross_subject_collisions() {
+    let s = store();
+    let physics = make_doc("Q in physics", "h2physics", &["dynamics"], &["hci"]);
+    s.put(std::slice::from_ref(&physics)).await.unwrap();
+
+    // Same subject: not a collision — rebuild legitimately replaces its rows.
+    let same = s
+        .find_foreign_ids(&SubjectId::new("h2physics"), &[physics.id])
+        .await
+        .unwrap();
+    assert!(same.is_empty());
+
+    // Different subject reusing the id: reported as foreign.
+    let foreign = s
+        .find_foreign_ids(&SubjectId::new("h2literature"), &[physics.id])
+        .await
+        .unwrap();
+    assert_eq!(foreign.len(), 1);
+    assert_eq!(foreign[0].0, physics.id);
+    assert_eq!(foreign[0].1.0, "h2physics");
+
+    // An id present nowhere: not reported.
+    let absent = s
+        .find_foreign_ids(&SubjectId::new("h2literature"), &[DocumentId(Uuid::new_v4())])
+        .await
+        .unwrap();
+    assert!(absent.is_empty());
+}

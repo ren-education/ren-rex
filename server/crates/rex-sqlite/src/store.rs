@@ -229,6 +229,43 @@ impl ItemStore for SqliteStore {
         Ok(())
     }
 
+    async fn find_foreign_ids(
+        &self,
+        subject: &SubjectId,
+        ids: &[DocumentId],
+    ) -> Result<Vec<(DocumentId, SubjectId)>> {
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.conn.lock().unwrap();
+        let mut found = Vec::new();
+        // Chunk to stay well under SQLite's bound-parameter limit.
+        for chunk in ids.chunks(500) {
+            let placeholders =
+                std::iter::repeat("?").take(chunk.len()).collect::<Vec<_>>().join(",");
+            let sql = format!(
+                "SELECT id, subject_id FROM documents \
+                 WHERE subject_id != ? AND id IN ({placeholders})"
+            );
+            let mut args: Vec<String> = Vec::with_capacity(chunk.len() + 1);
+            args.push(subject.0.clone());
+            args.extend(chunk.iter().map(|id| id.to_string()));
+            let mut stmt = conn.prepare(&sql).map_err(map_err)?;
+            let rows = stmt
+                .query_map(params_from_iter(args.iter()), |r| {
+                    Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+                })
+                .map_err(map_err)?;
+            for row in rows {
+                let (id_s, subj) = row.map_err(map_err)?;
+                if let Ok(u) = Uuid::parse_str(&id_s) {
+                    found.push((DocumentId(u), SubjectId::new(subj)));
+                }
+            }
+        }
+        Ok(found)
+    }
+
     async fn get(&self, id: &DocumentId) -> Result<Option<Document>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn

@@ -37,6 +37,15 @@ pub trait ItemStore: Send + Sync {
     /// with per-PDF item counts and page-anchored counts.
     async fn list_pdfs(&self, subject: &SubjectId) -> Result<Vec<PdfSummary>>;
     async fn clear(&self, subject: &SubjectId) -> Result<()>;
+    /// Return any of `ids` that already exist under a subject *other than*
+    /// `subject`. `documents` keys on a single global `id`, so ingesting a
+    /// colliding id would silently overwrite another subject's document via
+    /// INSERT OR REPLACE. Ingest calls this to fail loudly instead.
+    async fn find_foreign_ids(
+        &self,
+        subject: &SubjectId,
+        ids: &[DocumentId],
+    ) -> Result<Vec<(DocumentId, SubjectId)>>;
 }
 
 #[async_trait]

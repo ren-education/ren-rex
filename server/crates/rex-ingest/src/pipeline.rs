@@ -117,6 +117,28 @@ pub async fn run(
         );
     }
 
+    // Phase 2.5: guard against cross-subject id collisions. `documents`
+    // keys on a single global `id`; an id already owned by another subject
+    // would be silently overwritten by INSERT OR REPLACE at write time.
+    // `rebuild` already cleared this subject's own rows, so same-subject
+    // ids never count as collisions here.
+    let incoming: Vec<DocumentId> = valid.iter().copied().collect();
+    let foreign = services
+        .items
+        .find_foreign_ids(&config.subject, &incoming)
+        .await?;
+    if !foreign.is_empty() {
+        let sample: Vec<String> = foreign
+            .iter()
+            .take(10)
+            .map(|(id, subj)| format!("  {id} already owned by subject '{}'", subj.0))
+            .collect();
+        return Err(IngestError::IdCollision {
+            count: foreign.len(),
+            sample,
+        });
+    }
+
     // Phase 3: anchor + embed + write in batches.
     write_docs(q_docs, &config, &services, &mut stats).await?;
     write_docs(n_docs, &config, &services, &mut stats).await?;

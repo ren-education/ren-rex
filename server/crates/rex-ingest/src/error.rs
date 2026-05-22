@@ -18,4 +18,10 @@ pub enum IngestError {
 
     #[error("missing input file: {0}")]
     MissingInput(String),
+
+    #[error("id collision: {count} incoming id(s) already belong to other subjects; \
+ingesting would silently overwrite their documents via INSERT OR REPLACE. \
+Re-run scripts/fix_reference_ids.py across every subject to assign \
+globally-unique ids, then rebuild. First offenders:\n{}", sample.join("\n"))]
+    IdCollision { count: usize, sample: Vec<String> },
 }
