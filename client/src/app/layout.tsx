@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Geist, Source_Serif_4, JetBrains_Mono } from "next/font/google";
+import { PostHogProvider } from "@/components/posthog-provider";
 import { cn } from "@/lib/utils";
 import { ALL_KEYWORDS, BRAND, SITE_URL, structuredData } from "@/lib/seo";
 
@@ -96,6 +97,7 @@ export default function RootLayout({
       className={cn("font-sans", geist.variable, serif.variable, mono.variable)}
     >
       <body className="min-h-screen antialiased">
+        <PostHogProvider />
         {children}
         {/* JSON-LD structured data. Emitted as a single script tag with an
          * array of three @type entries (WebSite / EducationalOrganization /

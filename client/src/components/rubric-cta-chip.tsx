@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUpRight, X } from "lucide-react";
+import { captureRexEvent } from "@/lib/posthog-client";
 
 // Per-session dismissal. The chip is meant to be present-but-quiet across
 // fresh visits, so we use sessionStorage (cleared when the tab closes) rather
@@ -38,6 +39,14 @@ export function RubricCtaChip() {
     }
   }
 
+  function trackRubricClick() {
+    captureRexEvent("rubric_cta_click", {
+      button_location: "header_chip",
+      destination: RUBRIC_URL,
+      ref: "rex",
+    });
+  }
+
   if (!mounted || dismissed) return null;
 
   return (
@@ -49,6 +58,7 @@ export function RubricCtaChip() {
         href={RUBRIC_URL}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={trackRubricClick}
         className="group inline-flex items-baseline gap-1 text-[0.7rem] text-muted-foreground transition-colors hover:text-foreground"
       >
         <span>
