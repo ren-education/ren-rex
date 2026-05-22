@@ -12,7 +12,18 @@ pub fn fuzzy_match_page(
     pages: &[(u32, String)],
     confidence_threshold: f32,
 ) -> (Option<u32>, f32) {
-    let target = if target.len() > 500 { &target[..500] } else { target };
+    // Truncate to ~500 bytes for n-gram perf, but never split a UTF-8 char:
+    // chemistry content (`dm⁻³`, `Δ`) places multi-byte chars at arbitrary
+    // offsets, so a raw `&target[..500]` can land inside a char and panic.
+    let target = if target.len() > 500 {
+        let mut end = 500;
+        while !target.is_char_boundary(end) {
+            end -= 1;
+        }
+        &target[..end]
+    } else {
+        target
+    };
     let mut best: (Option<u32>, f32) = (None, 0.0);
     for (page, text) in pages {
         let score = ngram_jaccard(target, text);
@@ -49,6 +60,18 @@ mod tests {
         );
         assert_eq!(page, Some(2));
         assert!(score >= 0.6);
+    }
+
+    #[test]
+    fn handles_multibyte_char_straddling_truncation_boundary() {
+        // 499 ASCII bytes + a 2-byte char ('³') => byte 500 falls inside the
+        // char. A raw `&target[..500]` panics; truncation must floor to a
+        // char boundary. Regression test for the h2chemistry ingest crash.
+        let target = format!("{}³ and some trailing question text here", "a".repeat(499));
+        assert!(target.len() > 500);
+        let pages = vec![(1u32, "unrelated page text".to_string())];
+        // Must not panic.
+        let _ = fuzzy_match_page(&target, &pages, 0.6);
     }
 
     #[test]
