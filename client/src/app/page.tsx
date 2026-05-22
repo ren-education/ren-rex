@@ -5,6 +5,12 @@ import type { SubjectStats } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+const UPCOMING_SUBJECTS = [
+  "H2 Economics",
+  "H2 Literature",
+  "H2 Mathematics",
+];
+
 const FALLBACK_SUBJECTS: SubjectStats[] = [
   { id: "h2history", item_count: 1866 },
   { id: "h2physics", item_count: 7758 },
@@ -73,6 +79,14 @@ export default async function Home() {
           Find questions, notes, and PDF pages across subjects. Hybrid search
           combines keyword matching with semantic similarity.
         </p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-border bg-accent/35 px-4 py-3 text-sm">
+          <span className="font-medium text-foreground">
+            More subjects coming soon
+          </span>
+          <span className="text-muted-foreground">
+            {UPCOMING_SUBJECTS.join(", ")}, and more.
+          </span>
+        </div>
       </section>
 
       <SearchPanel subjects={subjects} apiOnline={apiOnline} />
