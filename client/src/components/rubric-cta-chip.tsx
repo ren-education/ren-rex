@@ -62,7 +62,7 @@ export function RubricCtaChip() {
         className="group inline-flex items-baseline gap-1 text-[0.7rem] text-muted-foreground transition-colors hover:text-foreground"
       >
         <span>
-          Grade your own essays with{" "}
+          <span className="hidden sm:inline">Grade your own essays with </span>
           <span className="font-sans font-bold tracking-tight text-foreground">
             rubric
           </span>

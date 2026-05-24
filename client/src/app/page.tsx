@@ -32,8 +32,8 @@ export default async function Home() {
   const totalItems = subjects.reduce((n, s) => n + s.item_count, 0);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-10 px-6 py-14">
-      <header className="flex items-baseline justify-between border-b border-border pb-6">
+    <main className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-6 sm:gap-10 px-6 py-8 sm:py-14">
+      <header className="flex flex-wrap items-baseline justify-between gap-y-2 border-b border-border pb-6">
         <div className="flex items-baseline gap-2">
           {/* rex wordmark — sage italic e in serif */}
           <span className="font-heading text-3xl tracking-tight">
@@ -72,7 +72,7 @@ export default async function Home() {
       </header>
 
       <section className="flex flex-col gap-3">
-        <h1 className="font-heading text-4xl leading-tight tracking-tight">
+        <h1 className="font-heading text-3xl sm:text-4xl leading-tight tracking-tight">
           Search the archive.
         </h1>
         <p className="max-w-2xl text-base text-muted-foreground">

@@ -266,7 +266,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
                 plus the count plus the 32px indicator reserve (pr-8 on the
                 SelectItem). The dropdown inherits its width from the trigger
                 (base-ui: w-(--anchor-width)), so widening here widens both. */}
-            <SelectTrigger className="w-fit min-w-56">
+            <SelectTrigger className="w-full sm:w-fit sm:min-w-56">
               {/* base-ui's SelectValue shows the raw value string by default,
                   so even though SelectItem renders formatSubject(id), the
                   trigger would still say "gp". Pass a render fn so the
@@ -326,7 +326,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
                   : "/analytics"
               }
               className={cn(
-                "inline-flex items-center gap-1.5 text-sm text-muted-foreground",
+                "hidden sm:inline-flex items-center gap-1.5 text-sm text-muted-foreground",
                 "transition-colors hover:text-foreground",
                 "[&_svg]:transition-transform [&:hover_.arrow]:translate-x-0.5 [&:hover_.arrow]:-translate-y-0.5",
               )}
@@ -345,7 +345,7 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
             type="submit"
             disabled={isPending || !query.trim()}
             size="default"
-            className="ml-auto"
+            className="w-full sm:w-auto sm:ml-auto"
           >
             {isPending ? (
               <>
@@ -441,7 +441,10 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
             )}
         </div>
 
-        <div className="lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
+        <div className={cn(
+          "lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]",
+          selectedHit ? "h-[60vh] lg:h-auto" : "hidden lg:block",
+        )}>
           <PdfViewerLoader hit={selectedHit} query={query} />
         </div>
       </div>
