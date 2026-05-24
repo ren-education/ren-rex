@@ -519,7 +519,7 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
 
   return (
     <article data-slot="hit" className="flex flex-col gap-2 pt-6">
-      <div className="smallcaps flex items-center gap-x-2 gap-y-1">
+      <div className="smallcaps flex flex-wrap items-center gap-x-2 gap-y-1">
         {metaBits.map((m, i) => (
           <span key={i}>
             {m}
@@ -568,12 +568,18 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
           <span><span className="num">{d.mark}</span> marks</span>
         )}
         {d.pdf_anchor && (
-          <span className="inline-flex items-center gap-1.5">
+          <a
+            href={`/v1/documents/${d.id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5"
+            onClick={(e) => e.stopPropagation()}
+          >
             <FileText className="size-3.5" />
-            <span className={cn("text-primary", isSelected && "underline underline-offset-4")}>
+            <span className={cn("text-primary underline-offset-4", isSelected ? "underline" : "hover:underline")}>
               {d.pdf_anchor.pdf_path.split("/").pop()}
             </span>
-          </span>
+          </a>
         )}
         <span className="num text-muted-foreground/70 ml-auto">
           {hit.scores.bm25   != null && <>bm25 {hit.scores.bm25.toFixed(2)}&nbsp;</>}
