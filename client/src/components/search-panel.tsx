@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { hasAnalytics } from "@/lib/analytics";
+import { captureRexEvent } from "@/lib/posthog-client";
 import {
   Select,
   SelectContent,
@@ -235,6 +236,13 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (query.trim()) {
+      captureRexEvent("search_submitted", {
+        query: query.trim(),
+        mode,
+        subject: subject || null,
+      });
+    }
     // Reset to page 0 for any new search/filter. If page was already 0, the
     // useEffect won't re-fire on its own (deps unchanged), so call runQuery
     // explicitly. If page was non-zero, setPage(0) triggers the useEffect.
@@ -573,7 +581,14 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              captureRexEvent("pdf_link_click", {
+                document_id: d.id,
+                subject: d.subject,
+                pdf_path: d.pdf_anchor?.pdf_path ?? null,
+              });
+            }}
           >
             <FileText className="size-3.5" />
             <span className={cn("text-primary underline-offset-4", isSelected ? "underline" : "hover:underline")}>

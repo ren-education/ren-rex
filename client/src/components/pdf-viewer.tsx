@@ -11,6 +11,7 @@ import {
   locateBestPage,
   tokenizeQuery,
 } from "@/lib/pdf-match";
+import { captureRexEvent } from "@/lib/posthog-client";
 import type { SearchHit } from "@/lib/types";
 
 // Worker from jsdelivr. The version matches react-pdf's bundled pdfjs-dist
@@ -151,6 +152,11 @@ export function PdfViewer({ hit, query }: Props) {
             download={filename}
             className="ml-2 inline-flex items-center gap-1 border-b border-accent text-primary hover:border-primary"
             title="Download PDF"
+            onClick={() => captureRexEvent("pdf_download", {
+              document_id: hit.document.id,
+              subject: hit.document.subject,
+              pdf_path: hit.document.pdf_anchor?.pdf_path ?? null,
+            })}
           >
             download <Download className="size-3" />
           </a>
@@ -159,6 +165,11 @@ export function PdfViewer({ hit, query }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             className="ml-2 inline-flex items-center gap-1 border-b border-accent text-primary hover:border-primary"
+            onClick={() => captureRexEvent("pdf_open", {
+              document_id: hit.document.id,
+              subject: hit.document.subject,
+              pdf_path: hit.document.pdf_anchor?.pdf_path ?? null,
+            })}
           >
             open <ExternalLink className="size-3" />
           </a>
