@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ChevronDown, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -8,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { FACET_FIELDS, type FacetField, type FacetMap } from "@/lib/use-facets";
@@ -80,6 +82,7 @@ export function FacetBar({
               values={values}
               selected={sel}
               onToggle={(v) => onToggle(field, v)}
+              searchable={field === "topics"}
             />
           );
         })}
@@ -144,14 +147,35 @@ interface FacetDropdownProps {
   values: Array<{ value: string; count: number }>;
   selected: string[];
   onToggle: (value: string) => void;
+  searchable?: boolean;
 }
 
-function FacetDropdown({ field, values, selected, onToggle }: FacetDropdownProps) {
+function FacetDropdown({
+  field,
+  values,
+  selected,
+  onToggle,
+  searchable = false,
+}: FacetDropdownProps) {
   const label = FIELD_LABEL[field];
+  const [query, setQuery] = useState("");
   const sortedValues = [...values].sort((a, b) => b.count - a.count);
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredValues =
+    searchable && normalizedQuery.length > 0
+      ? sortedValues.filter(
+          (v) =>
+            v.value.toLowerCase().includes(normalizedQuery) ||
+            prettyValue(v.value).toLowerCase().includes(normalizedQuery),
+        )
+      : sortedValues;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu
+      onOpenChange={(open) => {
+        if (!open) setQuery("");
+      }}
+    >
       <DropdownMenuTrigger
         render={
           <Button
@@ -173,12 +197,34 @@ function FacetDropdown({ field, values, selected, onToggle }: FacetDropdownProps
         align="start"
         className="max-h-[360px] w-60 overflow-y-auto"
       >
+        {searchable && sortedValues.length > 0 && (
+          <div
+            className="sticky top-0 z-10 -mx-1 -mt-1 mb-1 border-b border-border bg-popover px-2 py-1.5"
+            // Keep keystrokes inside the input rather than letting the dropdown
+            // hijack them for type-ahead item selection.
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Input
+              type="search"
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${label.toLowerCase()}…`}
+              className="h-7 text-xs"
+            />
+          </div>
+        )}
         {sortedValues.length === 0 && (
           <div className="px-2 py-3 text-xs italic text-muted-foreground">
             No values match current filters.
           </div>
         )}
-        {sortedValues.map((v) => (
+        {sortedValues.length > 0 && filteredValues.length === 0 && (
+          <div className="px-2 py-3 text-xs italic text-muted-foreground">
+            No {label.toLowerCase()} match “{query}”.
+          </div>
+        )}
+        {filteredValues.map((v) => (
           <DropdownMenuCheckboxItem
             key={v.value}
             checked={selected.includes(v.value)}
