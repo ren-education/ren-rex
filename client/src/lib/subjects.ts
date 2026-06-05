@@ -12,6 +12,7 @@ const SUBJECT_LABELS: Record<string, string> = {
   h2history: "H2 History",
   h2chemistry: "H2 Chemistry",
   h2literature: "H2 Literature",
+  h2math: "H2 Math",
 };
 
 const SUBJECT_SHORT_LABELS: Record<string, string> = {
@@ -20,6 +21,7 @@ const SUBJECT_SHORT_LABELS: Record<string, string> = {
   h2history: "History",
   h2chemistry: "Chemistry",
   h2literature: "Literature",
+  h2math: "Math",
 };
 
 /** Long form, suitable for dropdowns and headings. "h2physics" → "H2 Physics". */
