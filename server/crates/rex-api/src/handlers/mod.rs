@@ -30,6 +30,11 @@ pub fn routes() -> Router<std::sync::Arc<AppState>> {
             get(documents::get_pdf_anchor),
         )
         .route("/v1/documents/:id/pdf", get(documents::get_pdf))
+        .route(
+            "/v1/documents/:id/related-files",
+            get(documents::get_related_files),
+        )
+        .route("/v1/files/*path", get(documents::get_file))
 }
 
 pub fn declared_routes() -> Vec<&'static str> {
@@ -44,5 +49,7 @@ pub fn declared_routes() -> Vec<&'static str> {
         "GET /v1/documents/:id",
         "GET /v1/documents/:id/pdf-anchor",
         "GET /v1/documents/:id/pdf",
+        "GET /v1/documents/:id/related-files",
+        "GET /v1/files/*path",
     ]
 }
