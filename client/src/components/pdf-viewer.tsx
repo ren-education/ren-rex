@@ -12,7 +12,9 @@ import {
   tokenizeQuery,
 } from "@/lib/pdf-match";
 import { captureRexEvent } from "@/lib/posthog-client";
-import type { SearchHit } from "@/lib/types";
+import { relatedFiles } from "@/lib/rex";
+import { encodeFilePath } from "@/lib/utils";
+import type { RelatedFile, SearchHit } from "@/lib/types";
 
 // Worker from jsdelivr. The version matches react-pdf's bundled pdfjs-dist
 // (currently 4.x via react-pdf 9). Pinning the URL to `pdfjs.version`
@@ -36,6 +38,7 @@ export function PdfViewer({ hit, query }: Props) {
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(600);
+  const [related, setRelated] = useState<RelatedFile[]>([]);
 
   // Track which hit is currently active so async page-locate can bail out
   // if the user clicks another hit mid-scan.
@@ -51,6 +54,20 @@ export function PdfViewer({ hit, query }: Props) {
     setLoading(true);
     setError(null);
   }, [hit.document.id, hintedPage]);
+
+  // Fetch sibling files in the question's folder (answer scheme + related papers).
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setRelated([]);
+    relatedFiles(hit.document.id)
+      .then((res) => {
+        if (!ctrl.signal.aborted) setRelated(res.files);
+      })
+      .catch(() => {
+        if (!ctrl.signal.aborted) setRelated([]);
+      });
+    return () => ctrl.abort();
+  }, [hit.document.id]);
 
   // Track the available width so the page scales to fit.
   useEffect(() => {
@@ -175,6 +192,31 @@ export function PdfViewer({ hit, query }: Props) {
           </a>
         </span>
       </div>
+
+      {related.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="text-foreground/70">Files in this folder:</span>
+          {related.map((f) => (
+            <a
+              key={f.path}
+              href={`/v1/files/${encodeFilePath(f.path)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 border-b border-accent text-primary hover:border-primary"
+              onClick={() =>
+                captureRexEvent("related_file_open", {
+                  document_id: hit.document.id,
+                  subject: hit.document.subject,
+                  dir: f.path.split("/").slice(0, -1).join("/"),
+                  filename: f.filename,
+                })
+              }
+            >
+              {f.filename} <ExternalLink className="size-3" />
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* Render area */}
       <div

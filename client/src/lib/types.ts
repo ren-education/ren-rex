@@ -93,3 +93,13 @@ export interface SubjectStats {
   id: string;
   item_count: number;
 }
+
+export interface RelatedFile {
+  path: string;
+  filename: string;
+}
+
+export interface RelatedFilesResponse {
+  dir: string;
+  files: RelatedFile[];
+}

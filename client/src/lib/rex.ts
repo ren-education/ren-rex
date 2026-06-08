@@ -1,5 +1,6 @@
 import type {
   Filters,
+  RelatedFilesResponse,
   SearchRequest,
   SearchResponse,
   SubjectStats,
@@ -91,6 +92,12 @@ export function tagValues(
       method: "POST",
       body: JSON.stringify({ filters: filters ?? {} }),
     },
+  );
+}
+
+export function relatedFiles(docId: string): Promise<RelatedFilesResponse> {
+  return request<RelatedFilesResponse>(
+    `/v1/documents/${encodeURIComponent(docId)}/related-files`,
   );
 }
 
