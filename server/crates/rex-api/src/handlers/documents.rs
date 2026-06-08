@@ -113,6 +113,10 @@ pub async fn get_file(
     }
 
     // safe_join inside the blob store rejects `..` traversal (-> BadInput -> 400).
+    // Distinguish a missing file (404) from other storage errors (500).
+    if !blobs.exists(rel).await? {
+        return Err(Error::not_found(format!("file not found: {path}")).into());
+    }
     let bytes = blobs.get(rel).await?;
     let filename = rel
         .file_name()
