@@ -1,0 +1,94 @@
+name: Deploy rex server (Lightsail)
+
+# Manual, code-only deploy of the rex backend binary to the rex-prod Lightsail box.
+# Builds the release binary in CI (the 2 GB box can't comfortably build this), ships it
+# over SSH, swaps /usr/local/bin/rex, and restarts rex.service.
+#
+# This does NOT touch rex.db or the PDF corpus — those live on the dev box and are
+# synced by ren-infra/aws/rex/deploy.sh. Use this workflow for code changes; use
+# deploy.sh --rsync-pdfs after ingesting new content.
+#
+# Required repo secrets:
+#   REX_DEPLOY_SSH_KEY  dedicated ed25519 private key authorized on the box
+#   REX_DEPLOY_HOST     public IP / hostname of rex-prod (e.g. 54.255.200.145)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-rex
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Pinned to 22.04 to match the box's glibc (Ubuntu 22.04) so the dynamically
+    # linked binary is ABI-compatible. Do not switch to ubuntu-latest (24.04).
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    env:
+      REX_DEPLOY_HOST: ${{ secrets.REX_DEPLOY_HOST }}
+      REX_DEPLOY_USER: ubuntu
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo + target
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: server
+
+      - name: Build rex binary
+        working-directory: server
+        run: cargo build --release --bin rex
+
+      - name: Configure SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.REX_DEPLOY_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${REX_DEPLOY_HOST:-}" ]; then
+            echo "REX_DEPLOY_HOST secret is not set" >&2
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$REX_DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Ship binary and restart service
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/deploy_key \
+            server/target/release/rex \
+            "$REX_DEPLOY_USER@$REX_DEPLOY_HOST:/tmp/rex-new"
+          ssh -i ~/.ssh/deploy_key "$REX_DEPLOY_USER@$REX_DEPLOY_HOST" \
+            'sudo install -m 0755 /tmp/rex-new /usr/local/bin/rex \
+             && rm -f /tmp/rex-new \
+             && sudo systemctl restart rex.service'
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          sleep 3
+          # 1. Health check.
+          health=$(ssh -i ~/.ssh/deploy_key "$REX_DEPLOY_USER@$REX_DEPLOY_HOST" \
+            'curl -sf http://127.0.0.1:8080/v1/health' || echo FAIL)
+          echo "health: $health"
+          if [ "$health" = "FAIL" ]; then
+            echo "Health check failed — check: journalctl -u rex.service -n 50" >&2
+            exit 1
+          fi
+          # 2. Prove the NEW binary is live: the related-files route parses the id and
+          #    rejects a non-UUID with 400. An old binary (no such route) returns 404.
+          code=$(ssh -i ~/.ssh/deploy_key "$REX_DEPLOY_USER@$REX_DEPLOY_HOST" \
+            'curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/v1/documents/not-a-uuid/related-files')
+          echo "/v1/documents/not-a-uuid/related-files -> $code (expect 400 on new binary)"
+          if [ "$code" != "400" ]; then
+            echo "New route missing (got $code, want 400) — old binary may still be running." >&2
+            exit 1
+          fi
+          echo "Deploy verified: new rex binary is live."
