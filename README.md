@@ -131,6 +131,26 @@ pnpm dev   # → http://localhost:3000
 Full server-side commands: see [`server/README.md`](server/README.md).
 Client-side: see [`client/README.md`](client/README.md).
 
+## Deploy
+
+The server runs on an AWS Lightsail box (`rex-prod`). For a **code-only**
+change, deploy with the manual GitHub Action — it builds the binary in CI,
+ships it over SSH, swaps `/usr/local/bin/rex`, restarts `rex.service`, and
+smoke-tests:
+
+```bash
+# after pushing the code you want live:
+gh workflow run "Deploy rex server (Lightsail)" -R ren-education/ren-rex --ref main
+gh run watch -R ren-education/ren-rex
+```
+
+This is a pure binary swap — it does **not** touch `rex.db` or the PDF corpus,
+so no reindex. After ingesting new content (new DB / PDFs), use the data-aware
+deploy from the dev box instead: `ren-infra/aws/rex/deploy.sh --rsync-pdfs`.
+
+The client is a separate Next.js app deployed on Vercel (auto-deploys on push).
+Full deploy + first-time setup: [`ren-infra/runbooks/rex-deploy.md`](../ren-infra/runbooks/rex-deploy.md).
+
 ## Status
 
 | Area | Status |
