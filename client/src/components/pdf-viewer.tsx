@@ -22,6 +22,9 @@ import type { RelatedFile, SearchHit } from "@/lib/types";
 pdfjs.GlobalWorkerOptions.workerSrc =
   `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
+// Show at most this many sibling files before collapsing the rest behind a "+N more".
+const RELATED_LIMIT = 7;
+
 interface Props {
   hit: SearchHit;
   /** The current user query; terms get highlighted on the rendered page. */
@@ -39,6 +42,7 @@ export function PdfViewer({ hit, query }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(600);
   const [related, setRelated] = useState<RelatedFile[]>([]);
+  const [showAllRelated, setShowAllRelated] = useState(false);
 
   // Track which hit is currently active so async page-locate can bail out
   // if the user clicks another hit mid-scan.
@@ -59,6 +63,7 @@ export function PdfViewer({ hit, query }: Props) {
   useEffect(() => {
     const ctrl = new AbortController();
     setRelated([]);
+    setShowAllRelated(false);
     relatedFiles(hit.document.id)
       .then((res) => {
         if (!ctrl.signal.aborted) setRelated(res.files);
@@ -193,31 +198,6 @@ export function PdfViewer({ hit, query }: Props) {
         </span>
       </div>
 
-      {related.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="text-foreground/70">Files in this folder:</span>
-          {related.map((f) => (
-            <a
-              key={f.path}
-              href={`/v1/files/${encodeFilePath(f.path)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 border-b border-accent text-primary hover:border-primary"
-              onClick={() =>
-                captureRexEvent("related_file_open", {
-                  document_id: hit.document.id,
-                  subject: hit.document.subject,
-                  dir: f.path.split("/").slice(0, -1).join("/"),
-                  filename: f.filename,
-                })
-              }
-            >
-              {f.filename} <ExternalLink className="size-3" />
-            </a>
-          ))}
-        </div>
-      )}
-
       {/* Render area */}
       <div
         ref={containerRef}
@@ -257,6 +237,39 @@ export function PdfViewer({ hit, query }: Props) {
         </Document>
       </div>
 
+      {related.length > 0 && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span className="text-foreground/70">Files in this folder:</span>
+          {(showAllRelated ? related : related.slice(0, RELATED_LIMIT)).map((f) => (
+            <a
+              key={f.path}
+              href={`/v1/files/${encodeFilePath(f.path)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 border-b border-accent text-primary hover:border-primary"
+              onClick={() =>
+                captureRexEvent("related_file_open", {
+                  document_id: hit.document.id,
+                  subject: hit.document.subject,
+                  dir: f.path.split("/").slice(0, -1).join("/"),
+                  filename: f.filename,
+                })
+              }
+            >
+              {f.filename} <ExternalLink className="size-3" />
+            </a>
+          ))}
+          {!showAllRelated && related.length > RELATED_LIMIT && (
+            <button
+              type="button"
+              onClick={() => setShowAllRelated(true)}
+              className="border-b border-accent text-primary hover:border-primary"
+            >
+              +{related.length - RELATED_LIMIT} more
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
