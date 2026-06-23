@@ -23,6 +23,7 @@ import { FacetBar } from "@/components/facet-bar";
 import { useFacets, type FacetField } from "@/lib/use-facets";
 import { filter as filterApi, search as searchApi } from "@/lib/rex";
 import { formatSubject } from "@/lib/subjects";
+import { hasViewablePdf } from "@/lib/types";
 import type {
   DocumentKind,
   Filters,
@@ -575,7 +576,7 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
         {d.mark != null && (
           <span><span className="num">{d.mark}</span> marks</span>
         )}
-        {d.pdf_anchor && (
+        {hasViewablePdf(d.pdf_anchor) && (
           <a
             href={`/v1/documents/${d.id}/pdf`}
             target="_blank"
@@ -592,7 +593,7 @@ function HitCard({ hit, isSelected }: { hit: SearchHit; isSelected: boolean }) {
           >
             <FileText className="size-3.5" />
             <span className={cn("text-primary underline-offset-4", isSelected ? "underline" : "hover:underline")}>
-              {d.pdf_anchor.pdf_path.split("/").pop()}
+              {d.pdf_anchor?.pdf_path.split("/").pop()}
             </span>
           </a>
         )}

@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
-import type { SearchHit } from "@/lib/types";
+import { hasViewablePdf, type SearchHit } from "@/lib/types";
 
 // react-pdf depends on pdfjs which uses browser globals — disable SSR.
 const PdfViewer = dynamic(
@@ -36,12 +36,13 @@ export function PdfViewerLoader({ hit, query }: Props) {
     );
   }
 
-  if (!hit.document.pdf_anchor) {
+  if (!hasViewablePdf(hit.document.pdf_anchor)) {
     return (
       <div className="flex h-full min-h-0 flex-col items-center justify-center gap-1 text-center text-sm text-muted-foreground">
-        <p className="font-heading text-base text-foreground">No PDF attached.</p>
+        <p className="font-heading text-base text-foreground">No PDF available.</p>
         <p className="max-w-xs italic">
-          This document was indexed without a PDF anchor — there's nothing to render.
+          This document has no source PDF on file — only its extracted text is
+          searchable.
         </p>
       </div>
     );

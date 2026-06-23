@@ -18,6 +18,19 @@ export interface PdfAnchor {
   fallback_reason: "LowConfidence" | "PdfReadFailed" | "PdfNotFound" | null;
 }
 
+/**
+ * Whether a document's PDF can actually be opened. A `PdfNotFound` anchor means
+ * ingest never located the source PDF on disk, so `GET /v1/documents/:id/pdf`
+ * has no file to serve and errors out — don't offer the link. Other states
+ * (LowConfidence / PdfReadFailed) still have a real file behind them, so they
+ * remain viewable.
+ */
+export function hasViewablePdf(
+  anchor: PdfAnchor | null | undefined,
+): anchor is PdfAnchor {
+  return !!anchor && anchor.fallback_reason !== "PdfNotFound";
+}
+
 export interface RexDocument {
   id: string;
   subject: string;
