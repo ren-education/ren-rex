@@ -5,11 +5,10 @@ import type { SubjectStats } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const UPCOMING_SUBJECTS = [
-  "H2 Economics",
-  "H2 Literature",
-  "H2 Mathematics",
-];
+// Subjects we've crawled but haven't published yet. Anything live (see
+// SUBJECT_LABELS in lib/subjects.ts) must NOT appear here — the banner below
+// only renders when this list is non-empty, so it's empty rather than stale.
+const UPCOMING_SUBJECTS: string[] = [];
 
 const FALLBACK_SUBJECTS: SubjectStats[] = [
   { id: "h2history", item_count: 1866 },
@@ -79,14 +78,16 @@ export default async function Home() {
           Find questions, notes, and PDF pages across subjects. Hybrid search
           combines keyword matching with semantic similarity.
         </p>
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-border bg-accent/35 px-4 py-3 text-sm">
-          <span className="font-medium text-foreground">
-            More subjects coming soon
-          </span>
-          <span className="text-muted-foreground">
-            {UPCOMING_SUBJECTS.join(", ")}, and more.
-          </span>
-        </div>
+        {UPCOMING_SUBJECTS.length > 0 && (
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-y border-border bg-accent/35 px-4 py-3 text-sm">
+            <span className="font-medium text-foreground">
+              More subjects coming soon
+            </span>
+            <span className="text-muted-foreground">
+              {UPCOMING_SUBJECTS.join(", ")}, and more.
+            </span>
+          </div>
+        )}
       </section>
 
       <SearchPanel subjects={subjects} apiOnline={apiOnline} />

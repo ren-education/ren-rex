@@ -13,6 +13,9 @@ const SUBJECT_LABELS: Record<string, string> = {
   h2chemistry: "H2 Chemistry",
   h2literature: "H2 Literature",
   h2math: "H2 Math",
+  h2biology: "H2 Biology",
+  h2econs: "H2 Economics",
+  h2cll: "H2 Chinese Language Literature",
 };
 
 const SUBJECT_SHORT_LABELS: Record<string, string> = {
@@ -22,6 +25,9 @@ const SUBJECT_SHORT_LABELS: Record<string, string> = {
   h2chemistry: "Chemistry",
   h2literature: "Literature",
   h2math: "Math",
+  h2biology: "Biology",
+  h2econs: "Economics",
+  h2cll: "Chinese Lit",
 };
 
 /** Long form, suitable for dropdowns and headings. "h2physics" → "H2 Physics". */
