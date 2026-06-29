@@ -15,7 +15,7 @@ const SUBJECT_LABELS: Record<string, string> = {
   h2math: "H2 Math",
   h2biology: "H2 Biology",
   h2econs: "H2 Economics",
-  h2cll: "H2 Chinese Language Literature",
+  h2cll: "H2 Chinese Lit",
 };
 
 const SUBJECT_SHORT_LABELS: Record<string, string> = {

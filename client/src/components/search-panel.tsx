@@ -271,11 +271,10 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
 
         <div className="flex flex-wrap items-center gap-3">
           <Select value={subject} onValueChange={(v) => setSubject(v ?? "")}>
-            {/* min-w-56 leaves room for the widest item ("H1 General Paper")
-                plus the count plus the 32px indicator reserve (pr-8 on the
-                SelectItem). The dropdown inherits its width from the trigger
-                (base-ui: w-(--anchor-width)), so widening here widens both. */}
-            <SelectTrigger className="w-full sm:w-fit sm:min-w-56">
+            {/* The dropdown inherits its width from the trigger (base-ui:
+                w-(--anchor-width)), so keep the subject menu wide enough for
+                long labels and right-aligned counts. */}
+            <SelectTrigger className="w-full sm:w-fit sm:min-w-72">
               {/* base-ui's SelectValue shows the raw value string by default,
                   so even though SelectItem renders formatSubject(id), the
                   trigger would still say "gp". Pass a render fn so the
@@ -292,11 +291,10 @@ export function SearchPanel({ subjects, apiOnline }: Props) {
               <SelectItem value="__all__">All subjects</SelectItem>
               {subjects.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
-                  <span>{formatSubject(s.id)}</span>
-                  {/* ml-auto right-aligns the count inside the ItemText
-                      flex row so labels and counts line up in a column —
-                      and so the count never crashes into the check. */}
-                  <span className="num text-muted-foreground ml-auto">
+                  <span className="min-w-0 flex-1 truncate">
+                    {formatSubject(s.id)}
+                  </span>
+                  <span className="num ml-auto shrink-0 text-muted-foreground">
                     {s.item_count.toLocaleString()}
                   </span>
                 </SelectItem>
